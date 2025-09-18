@@ -6,8 +6,12 @@
     <title>AI Excel Data Validator Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
+    
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -642,47 +646,147 @@
             updateReportButtonStatus();
         }
         
-        function generateErrorReport() {
-             if (!areManualChecksComplete()) {
-                  alert("Please complete all manual verification checklists before downloading the report.");
-                  return;
-             }
-            
-             updateErrorReport([], errorTypes.MANUAL_CHECK_FAILED, () => {});
-             const manualErrors = getManualCheckErrors();
-             updateErrorReport(manualErrors, errorTypes.MANUAL_CHECK_FAILED, (error, type) => ({
-                 particulars: error.text,
-                 type: type,
-                 correction: 'This item was marked as "No". Please provide the required documentation/photographs or justification.'
-             }));
-            
-             if (errorReportData.length === 0) {
-                 alert("No errors have been detected to generate a report.");
-                 return;
-             }
+        // REPLACE your old generateErrorReport function with this final version
 
-             const dataForSheet = errorReportData.map((error, index) => ({
-                 'Sr.No': index + 1,
-                 'Error Observed In Particulars': error.particulars,
-                 'Type of Error': error.type,
-                 'Correction Required': error.correction
-             }));
+async function generateErrorReport() {
+    if (!areManualChecksComplete()) {
+        alert("Please complete all manual verification checklists before downloading the report.");
+        return;
+    }
 
-             const worksheet = XLSX.utils.json_to_sheet(dataForSheet);
-             const colWidths = [ { wch: 8 }, { wch: 70 }, { wch: 45 }, { wch: 70 } ];
-             worksheet['!cols'] = colWidths;
-             const headerStyle = { fill: { fgColor: { rgb: "FFDDDDDD" } }, font: { bold: true } };
-             const range = XLSX.utils.decode_range(worksheet['!ref']);
-             const headerRowIndex = range.s.r;
-             for (let C = range.s.c; C <= range.e.c; ++C) {
-                 const cellAddress = XLSX.utils.encode_cell({ r: headerRowIndex, c: C });
-                 if (worksheet[cellAddress]) worksheet[cellAddress].s = headerStyle;
-             }
-             const newWorkbook = XLSX.utils.book_new();
-             XLSX.utils.book_append_sheet(newWorkbook, worksheet, 'Error Report');
-             XLSX.writeFile(newWorkbook, 'Validation_Error_Report.xlsx');
+    // First, ensure the manual check errors are correctly collated
+    updateErrorReport([], errorTypes.MANUAL_CHECK_FAILED, () => {}); // Clear old manual errors
+    const manualErrors = getManualCheckErrors();
+    updateErrorReport(manualErrors, errorTypes.MANUAL_CHECK_FAILED, (error, type) => ({
+        particulars: error.text,
+        type: type,
+        correction: 'This item was marked as "No". Please provide the required documentation/photographs or justification.'
+    }));
+
+    if (errorReportData.length === 0) {
+        alert("No errors have been detected to generate a report.");
+        return;
+    }
+
+    // 1. Group errors by their type
+    const groupedErrors = errorReportData.reduce((acc, error) => {
+        const type = error.type || 'Uncategorized';
+        if (!acc[type]) {
+            acc[type] = [];
+        }
+        acc[type].push(error);
+        return acc;
+    }, {});
+
+    // --- ExcelJS Implementation ---
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Error Report');
+
+    // Define styles
+    const headerStyle = {
+        font: { name: 'Calibri', size: 14, bold: true, color: { argb: 'FFFFFFFF' } },
+        fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4F81BD' } }, // Blue background
+        alignment: { vertical: 'middle', horizontal: 'center' }
+    };
+    
+    const subHeaderStyle = {
+        font: { name: 'Calibri', size: 11, bold: true },
+        fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD9E1F2' } }, // Light blue background
+        border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
+    };
+
+    const cellStyle = {
+        alignment: { vertical: 'top', wrapText: true },
+        border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
+    };
+    
+    const totalRowStyle = {
+        font: { bold: true },
+        border: { top: { style: 'double' } }
+    };
+
+    // Set column widths
+    worksheet.columns = [
+        { key: 'sr', width: 8 },
+        { key: 'particulars', width: 70 },
+        { key: 'correction', width: 70 }
+    ];
+
+    let currentRowIndex = 1;
+
+    // 2. Build the styled report for each group
+    for (const errorType in groupedErrors) {
+        const errors = groupedErrors[errorType];
+
+        // Add two blank rows for spacing
+        if (currentRowIndex > 1) {
+            worksheet.addRow([]);
+            worksheet.addRow([]);
+            currentRowIndex += 2;
         }
 
+        // Add the main styled header for the group
+        const mainHeaderRow = worksheet.addRow([errorType.toUpperCase()]);
+        mainHeaderRow.eachCell(cell => {
+            cell.style = headerStyle;
+        });
+        worksheet.mergeCells(`A${currentRowIndex}:C${currentRowIndex}`);
+        mainHeaderRow.height = 25;
+        currentRowIndex++;
+
+        // Add the column sub-headers
+        const subHeaderRow = worksheet.addRow(['Sr. No', 'Particulars with U.Code', 'Correction Required']);
+        subHeaderRow.eachCell(cell => {
+            cell.style = subHeaderStyle;
+        });
+        currentRowIndex++;
+        
+        // Add data rows for each error
+        errors.forEach((error, index) => {
+            const dataRow = worksheet.addRow([
+                index + 1,
+                error.particulars,
+                error.correction
+            ]);
+            dataRow.eachCell({ includeEmpty: true }, (cell) => {
+                cell.style = cellStyle;
+            });
+            
+            // Auto-adjust row height based on content length
+            const particularsText = error.particulars || '';
+            const correctionText = error.correction || '';
+            const charsPerLine = 60; // A conservative estimate for characters per line
+            const heightPerLine = 16; // A bit of extra padding
+
+            const particularsLineCount = Math.ceil(particularsText.length / charsPerLine);
+            const correctionLineCount = Math.ceil(correctionText.length / charsPerLine);
+            
+            // Use the HIGHEST line count from either column to determine row height
+            const maxLineCount = Math.max(particularsLineCount, correctionLineCount, 1);
+            
+            dataRow.height = maxLineCount * heightPerLine;
+            currentRowIndex++;
+        });
+
+        // Add the total row for the group
+        const totalRow = worksheet.addRow([`TOTAL ERRORS:`, '', errors.length]);
+        worksheet.mergeCells(`A${currentRowIndex}:B${currentRowIndex}`);
+        
+        const totalLabelCell = worksheet.getCell(`A${currentRowIndex}`);
+        totalLabelCell.style = { font: { bold: true }, alignment: { horizontal: 'right' }, border: { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' }} };
+
+        const totalValueCell = worksheet.getCell(`C${currentRowIndex}`);
+        totalValueCell.style = { font: { bold: true }, border: { top: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' }} };
+
+        currentRowIndex++;
+    }
+
+    // 3. Generate and download the file
+    workbook.xlsx.writeBuffer().then(buffer => {
+        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        saveAs(blob, `Validation_Error_Report_${new Date().toISOString().slice(0,10)}.xlsx`);
+    });
+}
         // --- Manual Check Functions ---
         function initializeManualChecksState() {
             manualChecksState = {};
@@ -1942,4 +2046,3 @@ return {
     </script>
 </body>
 </html>
-
