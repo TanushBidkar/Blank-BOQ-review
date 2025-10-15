@@ -1256,14 +1256,17 @@ async function generateErrorReport() {
 
             const startIndex = findIndexByUCode(searchRange.startUCode);
 
-            if (startIndex === -1) {
-                return { status: 'NOT_FOUND', data: [] };
-            }
+        if (startIndex === -1) {
+            return { status: 'NOT_FOUND', data: [] };
+        }
 
-            // Determine the section identifier from the primary start code's first component.
-            // e.g., for "VI_13.1.2", the identifier is "VI_13". For "11.2", it is "11".
-            const primaryStartCode = searchRange.startUCode[0];
-            const sectionIdentifier = primaryStartCode.split('.')[0];
+        // --- CORRECTED LOGIC ---
+        // Get the UCode from the row that was ACTUALLY found in the sheet.
+        const foundRow = extractedDataJson[startIndex];
+        const actualStartCode = (foundRow[uCodeKey] || '').toString().trim();
+        
+        // Now, determine the section identifier from the correct, found UCode.
+        const sectionIdentifier = actualStartCode.split('.')[0];
 
             const relevantRows = [];
             for (let i = startIndex; i < extractedDataJson.length; i++) {
