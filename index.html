@@ -387,6 +387,7 @@
         const savingsExcessCheckBtn = document.getElementById('savings-excess-check-btn');
         const findFalseBtn = document.getElementById('find-false-btn');
         const varianceCwiWoBtn = document.getElementById('variance-cwi-wo-btn');
+        const varianceAmtCwiWoBtn = document.getElementById('variance-amt-cwi-wo-btn');
         const checkQtyMatchBtn = document.getElementById('check-qty-match-btn');
         const sqftItemsVarianceBtn = document.getElementById('sqft-items-variance-btn');
         const workNotInWoBtn = document.getElementById('work-not-in-wo-btn');
@@ -582,6 +583,7 @@
             savingsExcessCheckBtn.title = hasExtracted ? "Validate 'Savings' and 'Excess' calculation logic" : extractedSheetTitle;
             findFalseBtn.title = hasExtracted ? "Check if 'Savings' + 'Excess' equals the difference between 'CWI Amount' and 'WO Amount'" : extractedSheetTitle;
             varianceCwiWoBtn.title = hasExtracted ? "Validate 'Variance (CWI vs WO)' column calculation" : extractedSheetTitle;
+            
             debugHeadersBtn.title = hasExtracted ? "Show the exact headers the tool reads from your sheet" : extractedSheetTitle;
             varianceAmtCwiWoBtn.title = hasExtracted ? "Validate 'Variance (Amt)' column calculation" : extractedSheetTitle;
             checkQtyMatchBtn.title = hasExtracted ? "Find all items where WO Qty = CWI Qty (and Qty > 0)" : extractedSheetTitle;
