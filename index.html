@@ -140,6 +140,12 @@
                                     <button id="variance-cwi-wo-btn" class="w-full bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed">
                                         Check CWI vs WO Qty Variance
                                     </button>
+                                    <button id="variance-amt-cwi-wo-btn" class="w-full bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                                            Check CWI vs WO Amt Variance
+                                    </button>
+                                    <button id="check-qty-match-btn" class="w-full bg-teal-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-teal-700 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                                            Find (WO Qty = CWI Qty) Matches
+                                    </button>
                                 </div>
 
                                 <h4 class="font-semibold pt-4 mb-0 text-gray-600">Remark check</h4>
@@ -159,6 +165,9 @@
                                     </button>
                                     <button id="running-items-variance-btn" class="w-full bg-cyan-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-cyan-700 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed">
                                         Check for (R.ft/R.mt) based items exceeding 10%
+                                    </button>
+                                    <button id="sqft-items-variance-btn" class="w-full bg-purple-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-purple-700 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                                            Check for (Sq.ft) based items exceeding 25%
                                     </button>
                                 </div>
                                 
@@ -267,6 +276,8 @@
             SAVINGS_EXCESS_LOGIC: "'Savings'/'Excess' Logic Error",
             SAVINGS_EXCESS_CWI_WO_MISMATCH: "'Savings + Excess = CWI - WO' Mismatch",
             CWI_WO_VARIANCE: "'Variance (CWI vs WO)' Calculation Error",
+            QTY_MATCH: "WO Qty = CWI Qty Match",
+            POSITIVE_VARIANCE_SQFT: ">25% Positive Variance (Unit: Sq.ft)",
             WORK_NOT_IN_WO: 'Work Executed Not In WO (Missing Remark)',
             EXCEEDED_WO_QTY: 'Exceeded WO Quantity (Missing Remark)',
             POSITIVE_VARIANCE_NOS: '>10% Positive Variance (Unit: Nos)',
@@ -376,6 +387,8 @@
         const savingsExcessCheckBtn = document.getElementById('savings-excess-check-btn');
         const findFalseBtn = document.getElementById('find-false-btn');
         const varianceCwiWoBtn = document.getElementById('variance-cwi-wo-btn');
+        const checkQtyMatchBtn = document.getElementById('check-qty-match-btn');
+        const sqftItemsVarianceBtn = document.getElementById('sqft-items-variance-btn');
         const workNotInWoBtn = document.getElementById('work-not-in-wo-btn');
         const exceededWoQtyBtn = document.getElementById('exceeded-wo-qty-btn');
         const varianceThresholdBtn = document.getElementById('variance-threshold-btn');
@@ -411,6 +424,8 @@
         savingsExcessCheckBtn.addEventListener('click', runSavingsExcessCheck);
         findFalseBtn.addEventListener('click', runSavingsExcessCwiWoCheck);
         varianceCwiWoBtn.addEventListener('click', runVarianceCwiWoCheck);
+        checkQtyMatchBtn.addEventListener('click', runQtyMatchCheck);
+        sqftItemsVarianceBtn.addEventListener('click', runSqftItemsVarianceCheck);
         workNotInWoBtn.addEventListener('click', runWorkNotInWoCheck);
         exceededWoQtyBtn.addEventListener('click', runExceededWoQtyCheck);
         varianceThresholdBtn.addEventListener('click', runVarianceThresholdCheck);
@@ -545,6 +560,9 @@
             findFalseBtn.disabled = !hasExtracted;
             varianceCwiWoBtn.disabled = !hasExtracted;
             debugHeadersBtn.disabled = !hasExtracted;
+            varianceAmtCwiWoBtn.disabled = !hasExtracted;
+            checkQtyMatchBtn.disabled = !hasExtracted;
+            sqftItemsVarianceBtn.disabled = !hasExtracted;
 
             checkConcealedBtn.disabled = !hasFile;
             checkPmBtn.disabled = !hasFile;
@@ -565,6 +583,9 @@
             findFalseBtn.title = hasExtracted ? "Check if 'Savings' + 'Excess' equals the difference between 'CWI Amount' and 'WO Amount'" : extractedSheetTitle;
             varianceCwiWoBtn.title = hasExtracted ? "Validate 'Variance (CWI vs WO)' column calculation" : extractedSheetTitle;
             debugHeadersBtn.title = hasExtracted ? "Show the exact headers the tool reads from your sheet" : extractedSheetTitle;
+            varianceAmtCwiWoBtn.title = hasExtracted ? "Validate 'Variance (Amt)' column calculation" : extractedSheetTitle;
+            checkQtyMatchBtn.title = hasExtracted ? "Find all items where WO Qty = CWI Qty (and Qty > 0)" : extractedSheetTitle;
+            sqftItemsVarianceBtn.title = hasExtracted ? "Finds Sq.ft/Sft items where the quantity variance between CWI and Work Order is positive and exceeds 25%" : extractedSheetTitle;
         }
 
         function displaySheetData(sheetName) {
@@ -2038,6 +2059,196 @@ return {
             resultsContainer.appendChild(debugCard);
             validationResultsEl.classList.remove('hidden');
             alert("Header debug information has been displayed in the results panel.");
+        }
+        // --- New Function for Amt Variance Check ---
+        function runVarianceAmtCwiWoCheck() {
+            updateErrorReport([], errorTypes.CWI_WO_AMT_VARIANCE, () => {});
+            runGenericValidation({
+                errorType: errorTypes.CWI_WO_AMT_VARIANCE,
+                keys: [
+                    { keyName: 'varianceKey', potentialNames: ['Variance (Amt)', 'Amt Variance', 'Amount Variance', 'Variance in Amount'] },
+                    { keyName: 'val1Key', potentialNames: ['As per CWI (Amt)'] },
+                    { keyName: 'val2Key', potentialNames: ['As per WO (Amt)', 'Amt as per PO'] },
+                    { keyName: 'uCodeKey', potentialNames: ['U.code', 'U Code'] },
+                    { keyName: 'particularsKey', potentialNames: ['Particulars', 'Item'] },
+                ],
+                displayResults: (m, c) => displayVarianceCheckResults(m, c),
+                labels: {
+                    title: "CWI vs WO Amount Variance",
+                    success: "All 'Variance (Amt)' values are correct.",
+                    error: "incorrect 'Variance (Amt)' values.",
+                    col1: 'CWI Amt',
+                    col2: 'WO Amt'
+                }
+            },
+            (row, keys) => {
+                const sheetVariance = parseFloat(row[keys.varianceKey]) || 0;
+                const val1 = parseFloat(row[keys.val1Key]) || 0;
+                const val2 = parseFloat(row[keys.val2Key]) || 0;
+                const calculatedVariance = val1 - val2;
+                if (Math.abs(sheetVariance - calculatedVariance) > 0.01) {
+                    return {
+                        uCode: row[keys.uCodeKey] || 'N/A',
+                        particulars: row[keys.particularsKey] || 'No Description',
+                        val1: val1,
+                        val2: val2,
+                        sheetVariance,
+                        calculatedVariance
+                    };
+                }
+                return null;
+            });
+        }
+
+        // --- New Function for Qty Match Check ---
+        function runQtyMatchCheck() {
+            // This is an informational check, so we don't use the error report system.
+            // Clear previous results from other checks.
+            validationResultsEl.classList.add('hidden');
+            resultsContainer.innerHTML = '';
+            
+            runGenericValidation({
+                keys: [
+                    { keyName: 'cwiQtyKey', potentialNames: ['As per CWI (Qty)'] },
+                    { keyName: 'woQtyKey', potentialNames: ['As per WO - Qty', 'As per WO/PO (Qty)'] },
+                    { keyName: 'uCodeKey', potentialNames: ['U.code', 'U Code'] },
+                    { keyName: 'particularsKey', potentialNames: ['Particulars', 'Item'] }
+                ],
+                displayResults: displayQtyMatchResults // Use the new display function
+            },
+            (row, keys) => {
+                const cwiQty = parseFloat(row[keys.cwiQtyKey]) || 0;
+                const woQty = parseFloat(row[keys.woQtyKey]) || 0;
+
+                // Find items where quantities match AND are not zero
+                if (cwiQty > 0 && Math.abs(cwiQty - woQty) < 0.01) {
+                    return {
+                        uCode: row[keys.uCodeKey] || 'N/A',
+                        particulars: row[keys.particularsKey] || 'No Description',
+                        qty: cwiQty
+                    };
+                }
+                return null;
+            });
+        }
+
+        // --- New Display Function for Qty Match ---
+        function displayQtyMatchResults(matches) {
+            resultsContainer.innerHTML = ''; // Clear previous results
+            validationResultsEl.classList.remove('hidden');
+
+            if (matches.length === 0) {
+                const infoCard = document.createElement('div');
+                infoCard.className = 'p-4 rounded-lg border bg-blue-100 border-blue-300 text-center';
+                infoCard.innerHTML = `<div class="font-bold text-blue-800 text-lg flex items-center justify-center"><svg class="w-6 h-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>No Matches Found</div><div class="text-blue-700 mt-1">No items were found where (CWI Qty = WO Qty) and the quantity is greater than 0.</div>`;
+                resultsContainer.appendChild(infoCard);
+                alert("No items found where CWI Qty = WO Qty.");
+            } else {
+                const summaryCard = document.createElement('div');
+                summaryCard.className = 'mb-4 p-4 rounded-lg text-center bg-teal-100 border-teal-300';
+                summaryCard.innerHTML = `<div class="font-bold text-teal-800 text-lg flex items-center justify-center"><svg class="w-6 h-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>Quantity Matches Found</div><div class="text-teal-700 mt-1">${matches.length} item(s) found where CWI Qty = WO Qty.</div>`;
+                resultsContainer.appendChild(summaryCard);
+                alert(`${matches.length} item(s) found with matching non-zero quantities. See details below.`);
+
+                matches.forEach(item => {
+                    const itemCard = document.createElement('div');
+                    itemCard.className = 'p-4 rounded-lg border border-teal-300 bg-teal-50';
+                    itemCard.innerHTML = `<p class="font-semibold text-gray-800">${item.uCode} - ${item.particulars}</p>
+                                          <p class="text-sm mt-1">Matched Quantity: <span class="font-bold text-teal-700">${item.qty.toLocaleString('en-IN')}</span></p>`;
+                    resultsContainer.appendChild(itemCard);
+                });
+            }
+        }
+
+        // --- New Function for Sq.ft Variance Check ---
+        function runSqftItemsVarianceCheck() {
+            updateErrorReport([], errorTypes.POSITIVE_VARIANCE_SQFT, () => {});
+            runGenericValidation({
+                keys: [
+                    { keyName: 'unitKey', potentialNames: ['Unit'] },
+                    { keyName: 'cwiQtyKey', potentialNames: ['As per CWI (Qty)'] },
+                    { keyName: 'woQtyKey', potentialNames: ['As per WO - Qty', 'As per WO/PO (Qty)'] },
+                    { keyName: 'uCodeKey', potentialNames: ['U.code', 'U Code'] },
+                    { keyName: 'particularsKey', potentialNames: ['Particulars', 'Item'] }
+                ],
+                displayResults: displaySqftItemsVarianceResults // Use the new display function
+            }, (row, keys) => {
+                // Normalize unit: lowercase, remove dots, remove spaces
+                const unit = (row[keys.unitKey] || '').toString().toLowerCase().replace(/\./g, '').replace(/\s/g, '');
+                const targetUnits = ['sqft', 'sft']; // Handles 'sqft', 'sft', 'sq ft' (after normalization)
+
+                if (!targetUnits.includes(unit)) {
+                    return null;
+                }
+
+                const cwiQty = parseFloat(row[keys.cwiQtyKey]) || 0;
+                const woQty = parseFloat(row[keys.woQtyKey]) || 0;
+
+                if (woQty === 0) {
+                    return null; // Avoid division by zero
+                }
+
+                const variancePct = ((cwiQty - woQty) / woQty) * 100;
+
+                // Check for variance > 25%
+                if (variancePct > 25) {
+                    return {
+                        uCode: row[keys.uCodeKey] || 'N/A',
+                        particulars: row[keys.particularsKey] || 'No Description',
+                        unit: row[keys.unitKey], // Original unit for display
+                        woQty,
+                        cwiQty,
+                        variancePct
+                    };
+                }
+
+                return null;
+            });
+        }
+
+        // --- New Display Function for Sq.ft Variance ---
+        function displaySqftItemsVarianceResults(issues) {
+            resultsContainer.innerHTML = '';
+            validationResultsEl.classList.remove('hidden');
+
+            const varianceSqftFormatter = (issue, type) => ({
+                particulars: `${issue.uCode} - ${issue.particulars}`,
+                type: type,
+                correction: `Quantity variance for this square foot item (${issue.unit}) is +${issue.variancePct.toFixed(2)}%, which is over the 25% threshold. (WO Qty: ${issue.woQty.toLocaleString()}, Executed CWI Qty: ${issue.cwiQty.toLocaleString()}). Please review for accuracy.`
+            });
+            updateErrorReport(issues, errorTypes.POSITIVE_VARIANCE_SQFT, varianceSqftFormatter);
+
+            if (issues.length === 0) {
+                const successCard = document.createElement('div');
+                successCard.className = 'p-4 rounded-lg border bg-green-100 border-green-300 text-center';
+                successCard.innerHTML = `<div class="font-bold text-green-800 text-lg flex items-center justify-center"><svg class="w-6 h-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>Sq.ft Item Variances OK</div><div class="text-green-700 mt-1">No Sq.ft/Sft items found with a positive quantity variance exceeding 25%.</div>`;
+                resultsContainer.appendChild(successCard);
+                alert("Perfect! All square foot item quantity variances are within the >25% threshold.");
+            } else {
+                const errorSummaryCard = document.createElement('div');
+                errorSummaryCard.className = 'mb-4 p-4 rounded-lg text-center bg-purple-100 border-purple-300';
+                errorSummaryCard.innerHTML = `<div class="font-bold text-purple-800 text-lg flex items-center justify-center"><svg class="w-6 h-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>Significant Sq.ft Item Variances Found</div><div class="text-purple-700 mt-1">${issues.length} Sq.ft/Sft item(s) have a positive quantity variance greater than 25%.</div>`;
+                resultsContainer.appendChild(errorSummaryCard);
+                alert(`${issues.length} Sq.ft/Sft item(s) exceeded the >25% positive variance threshold. See details below.`);
+
+                issues.forEach(item => {
+                    const issueCard = document.createElement('div');
+                    const varianceText = `<span class="font-bold text-purple-800">+${item.variancePct.toFixed(2)}%</span>`;
+                    const cardClass = 'p-4 rounded-lg border border-purple-400 bg-purple-50';
+
+                    issueCard.className = cardClass;
+                    issueCard.innerHTML = `
+                        <p class="font-semibold text-gray-800">${item.uCode} - ${item.particulars}</p>
+                        <div class="mt-2 p-2 bg-white/50 rounded-md">
+                            <div class="text-sm grid grid-cols-1 md:grid-cols-3 gap-2">
+                                <p>Planned Qty (WO): <span class="font-medium">${item.woQty.toLocaleString('en-IN')}</span></p>
+                                <p>Actual Qty (CWI): <span class="font-medium">${item.cwiQty.toLocaleString('en-IN')}</span></p>
+                                <p>Variance (<span class="italic">${item.unit}</span>): ${varianceText}</p>
+                            </div>
+                        </div>`;
+                    resultsContainer.appendChild(issueCard);
+                });
+            }
         }
     </script>
 </body>
