@@ -351,14 +351,7 @@
                     type: 'cwi_qty_range_check',
                     searchRange: { startUCode: ["VI_13.5.1", "13.5.1"], endUCode: ["VI_13.5.3", "13.5.3"] }
                 },
-                { 
-                    id: 'gi_tray_length_exceeded_part13', 
-                    text: 'Is GI cable tray length for Electrical section Part 13 exceeding WO quantity?',
-                    type: 'quantity_exceed_check',
-                    searchRange: { startUCode: ["VI_13.5", "13.5"], endUCode: ["VI_13.5.3", "13.5.3"] },
-                    showsNext: 'gi_tray_layouts_checked_part13'
-                },
-                { id: 'gi_tray_layouts_checked_part13', text: 'Check the GI cable tray length carefully w.r.t. layouts and route provided by vendor', type: 'conditional_check', isConditional: true },
+                
             ],
             pm_approval: [
                 { id: 'pm_doc_list', text: 'I_21.k Document list, technical cut sheet approved by PM', type: 'cwi_qty_check', ucode: 'I_21.k' },
