@@ -189,6 +189,10 @@
                                         <span>Non-Standard Item Check</span>
                                         <span id="status-non-standard" class="text-white/80"></span>
                                     </button>
+                                    <button id="check-deductions-btn" class="w-full bg-emerald-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-emerald-600 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed flex justify-between items-center">
+    <span>Check for necessary deduction</span>
+    <span id="status-deductions" class="text-white/80"></span>
+</button>
                                 </div>
                                 
                                 <hr class="my-4 border-gray-400">
@@ -298,6 +302,46 @@
                 { id: 'core_cut_photos', text: 'Photographs of core cut in RCC slab provided', type: 'cwi_qty_check', keyword: 'core cut' },
                 { id: 'waterproofing_photos', text: 'Photographs of waterproofing and Brick Bat Coba provided', type: 'cwi_qty_check', keyword: ['brick bat coba', 'p/a waterproofing'] },
                 { id: 'ms_structure_staircase', text: 'Item V_2.a Providing, Fixing and fabrication of MS structure for staircase, under/overdeck strengthing of slab. Is MS weight certified by calculation of weight of MS', type: 'cwi_qty_check', ucode: 'V_2.a' },
+                { id: 'alum_solid_partition', text: 'Was Aluminum Framework 50 * 50 mm provided for solid partition?', type: 'cwi_qty_range_check', searchRange: { startUCode: ["III_1.a.i"], endUCode: ["III_1.a.ii"] } },
+                { id: 'alum_panelling', text: 'Was Aluminum Framework 50*38 mm provided for P/f panelling?', type: 'cwi_qty_check', ucode: 'III_1.a.v' },
+                { 
+    id: 'rmc_challan', 
+    text: 'Is RMC challan/invoice provided for RCC on site?', 
+    type: 'cwi_qty_check', 
+    keyword: 'ready mix concrete',
+    showsNext: 'rmc_shifted',
+    showsNextOnValue: 'no'
+},
+{ 
+    id: 'rmc_shifted', 
+    text: 'Is RMC qty shifted to in-situ R.C.C?', 
+    type: 'conditional_check', 
+    isConditional: true 
+},
+{ 
+    id: 'double_layer_steel', 
+    text: 'Was double layer of steel visible in photos for slab floor?', 
+    type: 'cwi_qty_check', 
+    keyword: 'floor slab with double layer of steel' 
+},
+{ 
+    id: 'chasing_work', 
+    text: 'Is chasing work considered in Civil vendor or AC vendor\'s bill?', 
+    type: 'chasing_check', 
+    keyword: 'chasing work' 
+},
+{ 
+    id: 'chasing_both_half', 
+    text: 'If both vendors claim quantity, have you provided half of the executed quantity to both?', 
+    type: 'conditional_check', 
+    isConditional: true 
+},
+{ 
+    id: 'trenching_disclaimer', 
+    text: '', 
+    type: 'trenching_disclaimer', 
+    isDisclaimer: true 
+},
             ],
             electrical: [
                 {
@@ -368,12 +412,102 @@
             pm_approval: [
                 { id: 'pm_doc_list', text: 'I_21.k Document list, technical cut sheet approved by PM', type: 'cwi_qty_check', ucode: 'I_21.k' },
                 { id: 'pm_carpenter', text: 'III_12.p.iv Supply of carpenter on monthly basis approved by PM', type: 'cwi_qty_check', ucode: 'III_12.p.iv' },
-                { id: 'pm_electrician', text: 'VI_15.1 Retaining one electrician at site till completion of IT installation approved by PM', type: 'cwi_qty_check', ucode: 'VI_15.1' }
+                { id: 'pm_electrician', text: 'VI_15.1 Retaining one electrician at site till completion of IT installation approved by PM', type: 'cwi_qty_check', ucode: 'VI_15.1' },
+                { 
+    id: 'scaffolding_type', 
+    text: 'Was scaffolding provided only for exterior work or for internal as well?', 
+    type: 'scaffolding_check', 
+    ucode: 'I_21.i',
+    isMultiOption: true,
+    options: ['Only Exterior wall', 'Only Interior wall', 'Both interior and exterior'],
+    showsNextOnValues: { 
+        'Only Interior wall': 'scaffolding_double_floor', 
+        'Both interior and exterior': 'scaffolding_double_floor' 
+    }
+},
+{ 
+    id: 'scaffolding_double_floor', 
+    text: 'Was Interior branch of double height?', 
+    type: 'conditional_check', 
+    isConditional: true 
+},
+{ 
+    id: 'scaffolding_material', 
+    text: 'Was MS or Bamboo scaffolding provided?', 
+    type: 'scaffolding_material_check', 
+    ucode: 'I_21.i',
+    isMultiOption: true,
+    options: ['MS', 'Bamboo'],
+    showsNext: 'scaffolding_bamboo_deduction',
+    showsNextOnValue: 'Bamboo'
+},
+{ 
+    id: 'scaffolding_bamboo_deduction', 
+    text: 'Was deduction carried out for bamboo scaffolding?', 
+    type: 'conditional_check', 
+    isConditional: true 
+},
             ],
             non_standard: [
                 { id: 'nsi_in_sheet', text: 'Any Non standard item in Measurement sheet?' },
                 { id: 'nsi_rate_validation', text: 'Is rate validation done for the non standard items done by CWI senior team member' }
-            ]
+            ],
+            deductions: [
+        { 
+            id: 'deduct_brickwork', 
+            text: 'Door Deduction carried out in Brickwork?', 
+            type: 'deduction_logic_check', 
+            searchRange: { startKeyword: "Do-do as 2(a)", endKeyword: "R.C.C Works" }, 
+            filterKeywords: ["door deduction", "less door"] 
+        },
+        { 
+            id: 'deduct_plaster', 
+            text: 'Door Deduction carried out in Plaster?', 
+            type: 'deduction_logic_check', 
+            searchRange: { startKeyword: "P/A 1:4 cement plaster", endKeyword: "POP covering on Flooring" }, 
+            filterKeywords: ["door deduction", "less door"] 
+        },
+        { 
+            id: 'deduct_strong_room', 
+            text: 'Door Deduction carried out in Strong Room?', 
+            type: 'deduction_logic_check', 
+            searchRange: { startKeyword: "R.C.C Works", endKeyword: "P/A 1:4 cement plaster" }, 
+            filterKeywords: ["door deduction", "less door"] 
+        },
+        { 
+            id: 'pop_toilet', 
+            text: 'POP Covering/Bubble Sheet Deduction for Toilet area', 
+            type: 'deduction_logic_check', 
+            searchRange: { startKeyword: "POP covering on Flooring", endKeyword: "STOP_AT_END" }, 
+            filterKeywords: ["toilet area", "toilet"] 
+        },
+        { 
+            id: 'pop_locker', 
+            text: 'POP Covering/Bubble Sheet Deduction for Locker area', 
+            type: 'deduction_logic_check', 
+            searchRange: { startKeyword: "POP covering on Flooring", endKeyword: "STOP_AT_END" }, 
+            filterKeywords: ["locker area", "locker"] 
+        },
+        { 
+            id: 'pop_server', 
+            text: 'POP covering/ Bubble Sheet Deduction for Server room', 
+            type: 'deduction_logic_check', 
+            searchRange: { startKeyword: "POP covering on Flooring", endKeyword: "STOP_AT_END" }, 
+            filterKeywords: ["server room", "server"] 
+        },
+        { 
+    id: 'waterproofing_plaster_deduction', 
+    text: 'Is wall quantity claimed in waterproofing deducted from plastering quantity?', 
+    type: 'waterproofing_wall_deduction_check'
+},
+{ 
+    id: 'skirting_width_disclaimer', 
+    text: '', 
+    type: 'skirting_width_disclaimer', 
+    isDisclaimer: true 
+},
+
+    ]
         };
         // --- DOM Element References ---
         const fileInput = document.getElementById('file-input');
@@ -426,8 +560,8 @@
         savingsExcessCheckBtn.addEventListener('click', runSavingsExcessCheck);
         findFalseBtn.addEventListener('click', runSavingsExcessCwiWoCheck);
         varianceCwiWoBtn.addEventListener('click', runVarianceCwiWoCheck);
-        varianceAmtCwiWoBtn.addEventListener('click', runVarianceAmtCwiWoCheck); // <--- ADD THIS LINE
-        checkQtyMatchBtn.addEventListener('click', runQtyMatchCheck);
+        varianceAmtCwiWoBtn.addEventListener('click', runVarianceAmtCwiWoCheck); // <--- ADD THIS LINE
+        checkQtyMatchBtn.addEventListener('click', runQtyMatchCheck);
         sqftItemsVarianceBtn.addEventListener('click', runSqftItemsVarianceCheck);
         workNotInWoBtn.addEventListener('click', runWorkNotInWoCheck);
         exceededWoQtyBtn.addEventListener('click', runExceededWoQtyCheck);
@@ -439,6 +573,7 @@
         checkElectricalBtn.addEventListener('click', () => openModal('electrical'));
         checkPmBtn.addEventListener('click', () => openModal('pm_approval'));
         checkNonStandardBtn.addEventListener('click', () => openModal('non_standard'));
+        document.getElementById('check-deductions-btn').addEventListener('click', () => openModal('deductions'));
         modalSaveBtn.addEventListener('click', saveModalChanges);
         modalCloseBtn.addEventListener('click', closeModal);
         detailsModalCloseBtn.addEventListener('click', () => detailsModal.classList.add('hidden'));
@@ -842,94 +977,223 @@ async function generateErrorReport() {
         }
         
         function openModal(checkType) {
-            currentModalCheckType = checkType;
-            detailsDataCache = {};
-            let titleText = '';
-            switch (checkType) {
-                case 'concealed': titleText = 'Check for Concealed Items'; break;
-                case 'electrical': titleText = 'Check for Electrical Items'; break;
-                case 'pm_approval': titleText = 'Non-Measureable items check'; break;
-                case 'non_standard': titleText = 'Non-Standard Item Check'; break;
-            }
-            modalTitle.textContent = titleText;
+    currentModalCheckType = checkType;
+    detailsDataCache = {};
+    let titleText = '';
+    
+    // Set Modal Title based on checkType
+    switch (checkType) {
+        case 'concealed': titleText = 'Check for Concealed Items'; break;
+        case 'electrical': titleText = 'Check for Electrical Items'; break;
+        case 'pm_approval': titleText = 'Non-Measureable items check'; break;
+        case 'non_standard': titleText = 'Non-Standard Item Check'; break;
+        case 'deductions': titleText = 'Check for necessary deduction'; break; // New Title
+    }
+    modalTitle.textContent = titleText;
 
-            modalBody.innerHTML = '';
-            const items = checklistConfig[checkType];
+    modalBody.innerHTML = '';
+    const items = checklistConfig[checkType];
 
-            items.forEach(item => {
-                let detailsButtonHtml = '';
-                let dataCheckStatus = 'NA';
+    items.forEach(item => {
+        let detailsButtonHtml = '';
+        let dataCheckStatus = 'NA';
 
-                if (item.type === 'quantity_exceed_check') {
-                    const analysis = analyzeSearchRange(item.searchRange);
-                    dataCheckStatus = analysis.status;
-                    detailsDataCache[item.id] = analysis;
-                    const isRangeFound = dataCheckStatus !== 'NOT_FOUND' && dataCheckStatus !== 'KEYS_NOT_FOUND';
-                    detailsButtonHtml = `<button id="details-${item.id}" class="details-button" ${!isRangeFound ? 'disabled' : ''}>Details</button>`;
-                
-                } else if (item.type === 'cwi_qty_range_check' || item.type === 'cwi_qty_filtered_range_check') {
-                    const filter = item.type === 'cwi_qty_filtered_range_check' ? item.filterKeyword : null;
-                    const analysis = analyzeCwiQtyInRange(item.searchRange, filter);
-                    dataCheckStatus = analysis.status;
-                    detailsDataCache[item.id] = analysis;
-                    const isButtonActive = dataCheckStatus === 'DATA_WITH_POSITIVE_QTY';
-                    detailsButtonHtml = `<button id="details-${item.id}" class="details-button" ${!isButtonActive ? 'disabled' : ''}>Details</button>`;
+        // --- DATA ANALYSIS LOGIC ---
+        
+        // 1. Logic for Deductions (Reading from Extracted Measurement Sheet)
+        if (item.type === 'deduction_logic_check') {
+            const analysis = analyzeDeductionsInMeasurement(item);
+            dataCheckStatus = analysis.status;
+            detailsDataCache[item.id] = analysis;
+            // Always enable details button for deductions to show your custom error message if data is missing
+            detailsButtonHtml = `<button id="details-${item.id}" class="details-button">Details</button>`;
 
-                } else if (item.type === 'cwi_qty_check' || item.type === 'simple_check') {
-                    if (item.keyword || item.ucode) {
-                        let relevantData = item.ucode ? findRelevantDataByUCode(item.ucode) : findRelevantData(item.keyword);
-                        detailsDataCache[item.id] = { data: relevantData };
-                        if (relevantData.length > 0) {
-                            const hasPositiveQty = extractedDataKeys.cwiQtyKey ? relevantData.some(row => (parseFloat(row[extractedDataKeys.cwiQtyKey]) || 0) > 0) : false;
-                            dataCheckStatus = hasPositiveQty ? 'DATA_WITH_POSITIVE_QTY' : 'DATA_WITH_ZERO_QTY';
-                        } else {
-                            dataCheckStatus = 'NO_DATA';
-                        }
-                        const isButtonActive = dataCheckStatus === 'DATA_WITH_POSITIVE_QTY';
-                        detailsButtonHtml = `<button id="details-${item.id}" class="details-button" ${!isButtonActive ? 'disabled' : ''}>Details</button>`;
-                    }
-                }
-                
-                const currentState = manualChecksState[item.id];
-                const conditionalHide = item.isConditional ? 'style="display: none;"' : '';
-                const itemHtml = `
-                    <div id="container-${item.id}" class="border rounded-md p-3 bg-gray-50" ${conditionalHide}>
-                        <div class="flex justify-between items-center">
-                            <label class="block text-gray-700 font-medium mb-2">${item.text}</label>
-                            ${detailsButtonHtml}
-                        </div>
-                        <div class="flex items-center space-x-6">
-                            <label class="flex items-center space-x-2 cursor-pointer">
-                                <input type="radio" name="${item.id}" value="yes" data-check-status="${dataCheckStatus}" class="form-radio text-green-600 focus:ring-green-500" ${currentState === 'yes' ? 'checked' : ''}>
-                                <span class="text-green-700 font-semibold">Yes</span>
-                            </label>
-                            <label class="flex items-center space-x-2 cursor-pointer">
-                                <input type="radio" name="${item.id}" value="no" data-check-status="${dataCheckStatus}" class="form-radio text-red-600 focus:ring-red-500" ${currentState === 'no' ? 'checked' : ''}>
-                                <span class="text-red-700 font-semibold">No</span>
-                            </label>
-                            <label class="flex items-center space-x-2 cursor-pointer">
-                                <input type="radio" name="${item.id}" value="na" data-check-status="${dataCheckStatus}" class="form-radio text-gray-500 focus:ring-gray-400" ${currentState === 'na' ? 'checked' : ''}>
-                                <span class="text-gray-600 font-semibold">N/A</span>
-                            </label>
-                        </div>
-                    </div>
-                `;
-                modalBody.insertAdjacentHTML('beforeend', itemHtml);
-            });
+        // 2. Logic for Quantity Exceedance
+        } else if (item.type === 'quantity_exceed_check') {
+            const analysis = analyzeSearchRange(item.searchRange);
+            dataCheckStatus = analysis.status;
+            detailsDataCache[item.id] = analysis;
+            const isRangeFound = dataCheckStatus !== 'NOT_FOUND' && dataCheckStatus !== 'KEYS_NOT_FOUND';
+            detailsButtonHtml = `<button id="details-${item.id}" class="details-button" ${!isRangeFound ? 'disabled' : ''}>Details</button>`;
+        
+        // 3. Logic for CWI Quantity Ranges
+        } else if (item.type === 'cwi_qty_range_check' || item.type === 'cwi_qty_filtered_range_check') {
+            const filter = item.type === 'cwi_qty_filtered_range_check' ? item.filterKeyword : null;
+            const analysis = analyzeCwiQtyInRange(item.searchRange, filter);
+            dataCheckStatus = analysis.status;
+            detailsDataCache[item.id] = analysis;
+            const isButtonActive = (dataCheckStatus === 'DATA_WITH_POSITIVE_QTY');
+detailsButtonHtml = `<button id="details-${item.id}" class="details-button" ${!isButtonActive ? 'disabled' : ''}>Details</button>`;
 
-            items.forEach(item => {
-                if (item.showsNext && manualChecksState[item.id] === 'yes') {
-                    const childContainer = document.getElementById(`container-${item.showsNext}`);
-                    if(childContainer) childContainer.style.display = 'block';
-                }
-            });
+        } else if (item.type === 'trenching_disclaimer') {
+    const analysis = analyzeTrenchingDisclaimer();
+    detailsDataCache[item.id] = analysis;
+    if (analysis.show) {
+        // Render disclaimer directly, no radio buttons
+        const disclaimerHtml = `
+            <div id="container-${item.id}" class="border-2 border-red-500 rounded-md p-4 bg-red-50 mb-3">
+                <p class="font-bold text-red-700 text-base">⚠️ DISCLAIMER: ${analysis.message}</p>
+            </div>`;
+        modalBody.insertAdjacentHTML('beforeend', disclaimerHtml);
+        // Initialize state as auto-flagged for report
+        manualChecksState[item.id] = 'no';
+    }
+    return; // Skip normal rendering
 
-            modalBody.querySelectorAll('input[type="radio"]').forEach(radio => radio.addEventListener('click', handleRadioClick));
-            modalBody.querySelectorAll('button[id^="details-"]').forEach(button => button.addEventListener('click', handleDetailsClick));
+} else if (item.type === 'skirting_width_disclaimer') {
+    const analysis = analyzeSkirtingWidthDisclaimer();
+    detailsDataCache[item.id] = analysis;
+    if (analysis.show) {
+        const disclaimerHtml = `
+            <div id="container-${item.id}" class="border-2 border-red-500 rounded-md p-4 bg-red-50 mb-3">
+                <p class="font-bold text-red-700 text-base">⚠️ DISCLAIMER: ${analysis.message}</p>
+            </div>`;
+        modalBody.insertAdjacentHTML('beforeend', disclaimerHtml);
+        manualChecksState[item.id] = 'no';
+    } else {
+        manualChecksState[item.id] = 'na';
+    }
+    return;
 
-            manualCheckModal.classList.remove('hidden');
+} else if (item.type === 'waterproofing_wall_deduction_check') {
+    const analysis = analyzeWaterproofingWallDeduction();
+    dataCheckStatus = analysis.status;
+    detailsDataCache[item.id] = analysis;
+    detailsButtonHtml = `<button id="details-${item.id}" class="details-button" ${analysis.data.length === 0 ? 'disabled' : ''}>Details</button>`;
+
+} else if (item.type === 'chasing_check') {
+    const analysis = analyzeChasingWork();
+    dataCheckStatus = analysis.status;
+    detailsDataCache[item.id] = analysis;
+    detailsButtonHtml = `<button id="details-${item.id}" class="details-button" ${analysis.qty === 0 ? 'disabled' : ''}>Details</button>`;
+
+} else if (item.type === 'scaffolding_check' || item.type === 'scaffolding_material_check') {
+    if (item.ucode) {
+        const relevantData = findRelevantDataByUCode(item.ucode);
+        detailsDataCache[item.id] = { data: relevantData };
+        const hasQty = relevantData.some(row => (parseFloat(row[extractedDataKeys.cwiQtyKey]) || 0) > 0);
+        dataCheckStatus = hasQty ? 'DATA_WITH_POSITIVE_QTY' : 'DATA_WITH_ZERO_QTY';
+        detailsButtonHtml = `<button id="details-${item.id}" class="details-button" ${!hasQty ? 'disabled' : ''}>Details</button>`;
+    }
+// 4. Logic for Simple Keyword/UCode checks
+       } else if (item.type === 'cwi_qty_check' || item.type === 'simple_check') {
+    if (item.keyword || item.ucode) {
+        let relevantData = item.ucode ? findRelevantDataByUCode(item.ucode) : findRelevantData(item.keyword);
+        detailsDataCache[item.id] = { data: relevantData };
+        if (relevantData.length > 0) {
+            const hasPositiveQty = extractedDataKeys.cwiQtyKey ? relevantData.some(row => (parseFloat(row[extractedDataKeys.cwiQtyKey]) || 0) > 0) : false;
+            dataCheckStatus = hasPositiveQty ? 'DATA_WITH_POSITIVE_QTY' : 'DATA_WITH_ZERO_QTY';
+        } else {
+            dataCheckStatus = 'NO_DATA';
         }
+        // No details button for these items
+        const noDetailsItems = ['rmc_shifted', 'chasing_both_half'];
+        if (!noDetailsItems.includes(item.id)) {
+            const isButtonActive = dataCheckStatus === 'DATA_WITH_POSITIVE_QTY';
+            detailsButtonHtml = `<button id="details-${item.id}" class="details-button" ${!isButtonActive ? 'disabled' : ''}>Details</button>`;
+        }
+    }
+}
+        
+        // --- UI GENERATION ---
 
+        // Custom labels for the Deduction section
+        const isDeduction = currentModalCheckType === 'deductions';
+        const yesLabel = "Yes";
+        const noLabel = isDeduction ? "Deduction Missed out" : "No";
+        const naLabel = isDeduction ? "Deduction Not required" : "N/A";
+
+        const currentState = manualChecksState[item.id];
+        const conditionalHide = item.isConditional ? 'style="display: none;"' : '';
+        
+        // Build radio buttons based on item type
+let radioButtonsHtml = '';
+
+if ((item.isMultiOption && item.options) || item.type === 'chasing_check') {
+    // Custom options for scaffolding and chasing
+    const optionsList = item.options || ['Civil vendors bill', 'HVAC vendors bill', 'Both'];
+    const colorClasses = ['text-blue-700', 'text-purple-700', 'text-indigo-700'];
+    optionsList.forEach((optValue, idx) => {
+        const checked = manualChecksState[item.id] === optValue ? 'checked' : '';
+        radioButtonsHtml += `
+            <label class="flex items-center space-x-2 cursor-pointer">
+                <input type="radio" name="${item.id}" value="${optValue}" data-check-status="${dataCheckStatus}" class="form-radio text-indigo-600" ${checked}>
+                <span class="${colorClasses[idx] || 'text-gray-700'} font-semibold">${optValue}</span>
+            </label>`;
+    });
+} else {
+    const yesLabel = "Yes";
+    const noLabel = isDeduction ? "Deduction Missed out" : "No";
+    const naLabel = isDeduction ? "Deduction Not required" : "N/A";
+
+    // Items that should only show Yes/No (no N/A option)
+    const yesNoOnlyItems = ['rmc_challan', 'rmc_shifted', 'chasing_both_half', 'scaffolding_double_floor', 'scaffolding_bamboo_deduction'];
+    const hideNA = yesNoOnlyItems.includes(item.id);
+
+    radioButtonsHtml = `
+        <label class="flex items-center space-x-2 cursor-pointer">
+            <input type="radio" name="${item.id}" value="yes" data-check-status="${dataCheckStatus}" class="form-radio text-green-600 focus:ring-green-500" ${currentState === 'yes' ? 'checked' : ''}>
+            <span class="text-green-700 font-semibold">${yesLabel}</span>
+        </label>
+        <label class="flex items-center space-x-2 cursor-pointer">
+            <input type="radio" name="${item.id}" value="no" data-check-status="${dataCheckStatus}" class="form-radio text-red-600 focus:ring-red-500" ${currentState === 'no' ? 'checked' : ''}>
+            <span class="text-red-700 font-semibold">${noLabel}</span>
+        </label>
+        ${hideNA ? '' : `
+        <label class="flex items-center space-x-2 cursor-pointer">
+            <input type="radio" name="${item.id}" value="na" data-check-status="${dataCheckStatus}" class="form-radio text-gray-500 focus:ring-gray-400" ${currentState === 'na' ? 'checked' : ''}>
+            <span class="text-gray-600 font-semibold">${naLabel}</span>
+        </label>`}`;
+}
+
+const itemHtml = `
+    <div id="container-${item.id}" class="border rounded-md p-3 bg-gray-50 mb-3" ${conditionalHide}>
+        <div class="flex justify-between items-center mb-2">
+            <label class="block text-gray-700 font-medium">${item.text}</label>
+            ${detailsButtonHtml}
+        </div>
+        <div class="flex items-center space-x-6 flex-wrap gap-y-2">
+            ${radioButtonsHtml}
+        </div>
+    </div>
+`;
+modalBody.insertAdjacentHTML('beforeend', itemHtml);
+    });
+
+    // Handle initial visibility for conditional items
+    items.forEach(item => {
+    // Handle showsNext (triggered on specific value)
+    if (item.showsNext) {
+        const triggerValue = item.showsNextOnValue || 'yes';
+        const childContainer = document.getElementById(`container-${item.showsNext}`);
+        if (childContainer && manualChecksState[item.id] === triggerValue) {
+            childContainer.style.display = 'block';
+        }
+    }
+
+    // Handle showsNextOnValues (multiple conditional children)
+    if (item.showsNextOnValues) {
+        const currentVal = manualChecksState[item.id];
+        const targetId = currentVal ? item.showsNextOnValues[currentVal] : null;
+        Object.values(item.showsNextOnValues).forEach(childId => {
+            const el = document.getElementById(`container-${childId}`);
+            if (el) el.style.display = (childId === targetId) ? 'block' : 'none';
+        });
+    }
+
+    // Handle chasing special case
+    if (item.id === 'chasing_work') {
+        const el = document.getElementById('container-chasing_both_half');
+        if (el) el.style.display = (manualChecksState['chasing_work'] === 'Both') ? 'block' : 'none';
+    }
+});
+
+    // Re-attach listeners to new elements
+    modalBody.querySelectorAll('input[type="radio"]').forEach(radio => radio.addEventListener('click', handleRadioClick));
+    modalBody.querySelectorAll('button[id^="details-"]').forEach(button => button.addEventListener('click', handleDetailsClick));
+
+    manualCheckModal.classList.remove('hidden');
+}
         function handleRadioClick(event) {
             const radio = event.target;
             const selection = radio.value;
@@ -967,24 +1231,48 @@ async function generateErrorReport() {
     }
     break;
 
-                case 'cwi_qty_check':
-                case 'cwi_qty_range_check':
-                case 'cwi_qty_filtered_range_check':
-                    if (checkStatus === 'NO_DATA' && selection !== 'na') {
-                        alert("No particulars found in the measurement sheet. Please select N/A.");
-                        revertSelection(); return;
-                    } else if (checkStatus === 'DATA_WITH_ZERO_QTY' && (selection === 'yes' || selection === 'no')) {
-                        alert("CWI quantity is zero for this item. Please select N/A.");
-                        revertSelection(); return;
-                    } else if (checkStatus === 'DATA_WITH_POSITIVE_QTY') {
-                        if (selection === 'na') {
-                            alert("Particulars were found with a quantity > 0. Please select either 'Yes' or 'No'.");
-                            revertSelection(); return;
-                        } else if (selection === 'no' && !confirm("Data exists for this item with a CWI quantity > 0. Are you sure you want to proceed with 'No'?")) {
-                            revertSelection(); return;
-                        }
-                    }
-                    break;
+  case 'cwi_qty_check':
+case 'cwi_qty_range_check':
+case 'cwi_qty_filtered_range_check':
+    const yesNoOnlyItems = ['rmc_shifted', 'chasing_both_half', 'scaffolding_double_floor', 'scaffolding_bamboo_deduction'];
+    if (yesNoOnlyItems.includes(itemId)) {
+        break;
+    }
+    if (itemId === 'rmc_challan') {
+        if (checkStatus === 'DATA_WITH_POSITIVE_QTY' && selection === 'no') {
+            alert("RCC quantity is present. Details button is active. You must select 'Yes'.");
+            revertSelection(); return;
+        }
+        if (checkStatus !== 'DATA_WITH_POSITIVE_QTY' && selection === 'yes') {
+            alert("No RCC quantity found. Details button is blurred. You must select 'No'.");
+            revertSelection(); return;
+        }
+        break;
+    }
+    if (checkStatus === 'NO_DATA' && selection !== 'na') {
+        alert("No particulars found in the measurement sheet. Please select N/A.");
+        revertSelection(); return;
+    } else if (checkStatus === 'DATA_WITH_ZERO_QTY' && itemId !== 'rmc_challan' && (selection === 'yes' || selection === 'no')) {
+    alert("CWI quantity is zero for this item. Please select N/A.");
+    revertSelection(); return;
+} else if (checkStatus === 'DATA_WITH_POSITIVE_QTY') {
+        if (selection === 'na') {
+            alert("Particulars were found with a quantity > 0. Please select either 'Yes' or 'No'.");
+            revertSelection(); return;
+        } else if (itemId === 'rmc_challan') {
+    if (checkStatus === 'DATA_WITH_POSITIVE_QTY' && selection === 'no') {
+        alert("RCC quantity is present in the measurement sheet. You must select 'Yes'.");
+        revertSelection(); return;
+    } else if (checkStatus !== 'DATA_WITH_POSITIVE_QTY' && selection === 'yes') {
+        alert("No RCC quantity found in the measurement sheet. You must select 'No'.");
+        revertSelection(); return;
+    }
+}
+else if (selection === 'no' && !confirm("Data exists for this item with a CWI quantity > 0. Are you sure you want to proceed with 'No'?")) {
+    revertSelection(); return;
+}
+    }
+    break;
 
                 case 'conditional_check':
                     if (selection === 'na') {
@@ -992,19 +1280,79 @@ async function generateErrorReport() {
                         revertSelection(); return;
                     }
                     break;
+                case 'deduction_logic_check':
+    if (checkStatus === 'QTY_FOUND') {
+        if (selection === 'no' || selection === 'na') {
+            alert("Quantity was found for this deduction. You cannot select 'Missed out' or 'Not required' if data is present. Please select 'Yes'.");
+            revertSelection(); return;
+        }
+    } else if (checkStatus === 'QTY_NOT_FOUND') {
+        if (selection === 'yes') {
+            alert("Deduction quantity is not present in the measurement sheet. You cannot select 'Yes'. Please select 'Deduction Missed out' or 'Deduction Not required'.");
+            revertSelection(); return;
+        }
+    }
+    break;
+    case 'chasing_check':
+    if (selection === 'Both') {
+        // Show the conditional "half quantity" question
+        const childContainer = document.getElementById('container-chasing_both_half');
+        if (childContainer) childContainer.style.display = 'block';
+    } else {
+        const childContainer = document.getElementById('container-chasing_both_half');
+        if (childContainer) childContainer.style.display = 'none';
+        manualChecksState['chasing_both_half'] = null;
+    }
+    break;
+
+case 'scaffolding_check':
+    // Handle showsNextOnValues
+    if (itemConfig.showsNextOnValues) {
+        Object.values(itemConfig.showsNextOnValues).forEach(targetId => {
+            const el = document.getElementById(`container-${targetId}`);
+            if (el) el.style.display = 'none';
+        });
+        const nextId = itemConfig.showsNextOnValues[selection];
+        if (nextId) {
+            const el = document.getElementById(`container-${nextId}`);
+            if (el) el.style.display = 'block';
+        }
+    }
+    break;
+
+case 'scaffolding_material_check':
+    if (itemConfig.showsNext && itemConfig.showsNextOnValue) {
+        const el = document.getElementById(`container-${itemConfig.showsNext}`);
+        if (el) el.style.display = (selection === itemConfig.showsNextOnValue) ? 'block' : 'none';
+        if (selection !== itemConfig.showsNextOnValue) {
+            manualChecksState[itemConfig.showsNext] = null;
+        }
+    }
+    break;
+
+case 'waterproofing_wall_deduction_check':
+    if (dataCheckStatus === 'QTY_FOUND' && selection === 'na') {
+        alert("Wall quantity was found in the waterproofing section. Please select Yes or No.");
+        revertSelection(); return;
+    } else if (dataCheckStatus === 'QTY_NOT_FOUND' && selection === 'yes') {
+        alert("No wall quantity found in the waterproofing section. Please select No or N/A.");
+        revertSelection(); return;
+    }
+    break;
             }
 
             // Update conditional visibility for electrical checks
             if (itemConfig.showsNext) {
-                const childContainer = document.getElementById(`container-${itemConfig.showsNext}`);
-                if (childContainer) {
-                    childContainer.style.display = (selection === 'yes') ? 'block' : 'none';
-                    if (selection !== 'yes') {
-                        manualChecksState[itemConfig.showsNext] = null;
-                        document.querySelectorAll(`input[name="${itemConfig.showsNext}"]`).forEach(r => r.checked = false);
-                    }
-                }
-            }
+    const childContainer = document.getElementById(`container-${itemConfig.showsNext}`);
+    if (childContainer) {
+        const triggerValue = itemConfig.showsNextOnValue || 'yes';
+        childContainer.style.display = (selection === triggerValue) ? 'block' : 'none';
+        if (selection !== triggerValue) {
+            manualChecksState[itemConfig.showsNext] = null;
+            document.querySelectorAll(`input[name="${itemConfig.showsNext}"]`).forEach(r => r.checked = false);
+        }
+    }
+}
         }
 
         function handleDetailsClick(event) {
@@ -1018,81 +1366,100 @@ async function generateErrorReport() {
         }
 
         function showDetailsModal(data, noDataFound = false, checkType = null, itemId = null) {
-            if (noDataFound) {
-                detailsModalBody.innerHTML = `<p class="text-gray-700 text-center p-8">No corresponding particulars were found in the 'Extracted Data' sheet.</p>`;
-                detailsModal.classList.remove('hidden');
-                return;
-            }
+    let itemConfig = null;
+    if (itemId && checklistConfig[checkType]) {
+        itemConfig = checklistConfig[checkType].find(item => item.id === itemId);
+    }
 
-            let tableHtml = '';
-            let itemConfig = null;
-            
-            if (itemId && checklistConfig[checkType]) {
-                itemConfig = checklistConfig[checkType].find(item => item.id === itemId);
-            }
+    // --- 1. HANDLE DEDUCTION LOGIC WARNING (BOLD RED MESSAGE) ---
+    // This triggers if no rows matching "Less door" etc. were found in the Measurement Sheet
+    if (itemConfig && itemConfig.type === 'deduction_logic_check' && (noDataFound || !data || data.length === 0)) {
+        detailsModalBody.innerHTML = `
+            <div class="p-10 text-center">
+                <p class="text-2xl font-bold text-red-600 uppercase tracking-wide">
+                    Less door or door deduction qty is not present.
+                </p>
+                <p class="text-lg font-semibold text-gray-800 mt-4">
+                    Please recheck your measurement sheet or contact your AI expert.
+                </p>
+            </div>`;
+        detailsModal.classList.remove('hidden');
+        return;
+    }
 
-            if (itemConfig && itemConfig.type === 'quantity_exceed_check') {
-                const { uCodeKey, particularsKey, woQtyKey, cwiQtyKey } = extractedDataKeys;
-                if (!uCodeKey || !particularsKey || !woQtyKey || !cwiQtyKey) {
-                    detailsModalBody.innerHTML = `<p class="text-red-600 p-4">Could not display details. Required columns (U.code, Particulars, As per WO - Qty, As per CWI (Qty)) were not found.</p>`;
-                    detailsModal.classList.remove('hidden');
-                    return;
-                }
+    // --- 2. HANDLE STANDARD NO DATA FOUND ---
+    if (noDataFound || !data || data.length === 0) {
+        detailsModalBody.innerHTML = `<p class="text-gray-700 text-center p-8">No corresponding particulars were found for this item.</p>`;
+        detailsModal.classList.remove('hidden');
+        return;
+    }
 
-                tableHtml = `<table class="min-w-full divide-y divide-gray-300 text-gray-800">
-                    <thead class="bg-gray-200">
-                        <tr>
-                            <th class="px-4 py-2 text-left text-xs font-bold text-gray-600 uppercase">U.Code/Sr.No</th>
-                            <th class="px-4 py-2 text-left text-xs font-bold text-gray-600 uppercase">Particulars</th>
-                            <th class="px-4 py-2 text-left text-xs font-bold text-gray-600 uppercase">As per WO - Qty</th>
-                            <th class="px-4 py-2 text-left text-xs font-bold text-gray-600 uppercase">As per CWI (Qty)</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">`;
+    let tableHtml = '';
 
-                data.forEach(row => {
-                    tableHtml += `
-                        <tr>
-                            <td class="px-4 py-2 whitespace-nowrap text-sm">${row[uCodeKey] || 'N/A'}</td>
-                            <td class="px-4 py-2 text-sm">${row[particularsKey] || ''}</td>
-                            <td class="px-4 py-2 whitespace-nowrap text-sm">${row[woQtyKey] || 0}</td>
-                            <td class="px-4 py-2 whitespace-nowrap text-sm">${row[cwiQtyKey] || 0}</td>
-                        </tr>`;
-                });
-                tableHtml += `</tbody></table>`;
-
-            } else {
-                const { uCodeKey, particularsKey, cwiQtyKey } = extractedDataKeys;
-                if (!uCodeKey || !particularsKey || !cwiQtyKey) {
-                    detailsModalBody.innerHTML = `<p class="text-red-600 p-4">Could not display details. Required columns (U.code, Particulars, As per CWI (Qty)) were not found.</p>`;
-                    detailsModal.classList.remove('hidden');
-                    return;
-                }
-
-                tableHtml = `<table class="min-w-full divide-y divide-gray-300 text-gray-800">
-                    <thead class="bg-gray-200">
-                        <tr>
-                            <th class="px-4 py-2 text-left text-xs font-bold text-gray-600 uppercase">U.Code/Sr.No</th>
-                            <th class="px-4 py-2 text-left text-xs font-bold text-gray-600 uppercase">Particulars</th>
-                            <th class="px-4 py-2 text-left text-xs font-bold text-gray-600 uppercase">As per CWI (Qty)</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">`;
-
-                data.forEach(row => {
-                    tableHtml += `
-                        <tr>
-                            <td class="px-4 py-2 whitespace-nowrap text-sm">${row[uCodeKey] || 'N/A'}</td>
-                            <td class="px-4 py-2 text-sm">${row[particularsKey] || ''}</td>
-                            <td class="px-4 py-2 whitespace-nowrap text-sm">${row[cwiQtyKey] || 0}</td>
-                        </tr>`;
-                });
-                tableHtml += `</tbody></table>`;
-            }
-
-            detailsModalBody.innerHTML = tableHtml;
+    // --- 3. RENDER TABLE FOR QUANTITY EXCEED CHECK (Requires WO vs Post Audit) ---
+    if (itemConfig && itemConfig.type === 'quantity_exceed_check') {
+        const { uCodeKey, particularsKey, woQtyKey, postAuditQtyKey } = extractedDataKeys;
+        if (!uCodeKey || !particularsKey || !woQtyKey || !postAuditQtyKey) {
+            detailsModalBody.innerHTML = `<p class="text-red-600 p-4">Required columns (U.code, Particulars, WO Qty, Post Audit Qty) not found.</p>`;
             detailsModal.classList.remove('hidden');
+            return;
         }
+
+        tableHtml = `<table class="min-w-full divide-y divide-gray-300 text-gray-800">
+            <thead class="bg-gray-200">
+                <tr>
+                    <th class="px-4 py-2 text-left text-xs font-bold text-gray-600 uppercase">U.Code/Sr.No</th>
+                    <th class="px-4 py-2 text-left text-xs font-bold text-gray-600 uppercase">Particulars</th>
+                    <th class="px-4 py-2 text-left text-xs font-bold text-gray-600 uppercase">As per WO - Qty</th>
+                    <th class="px-4 py-2 text-left text-xs font-bold text-gray-600 uppercase">As per Post Audit (Qty)</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">`;
+
+        data.forEach(row => {
+            tableHtml += `
+                <tr>
+                    <td class="px-4 py-2 whitespace-nowrap text-sm">${row[uCodeKey] || 'N/A'}</td>
+                    <td class="px-4 py-2 text-sm">${row[particularsKey] || ''}</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-sm text-right">${row[woQtyKey] || 0}</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-sm text-right font-semibold text-red-600">${row[postAuditQtyKey] || 0}</td>
+                </tr>`;
+        });
+        tableHtml += `</tbody></table>`;
+
+    // --- 4. RENDER TABLE FOR ALL OTHER CHECKS (CWI Quantity View) ---
+    } else {
+        const { uCodeKey, particularsKey, cwiQtyKey } = extractedDataKeys;
+        if (!uCodeKey || !particularsKey || !cwiQtyKey) {
+            detailsModalBody.innerHTML = `<p class="text-red-600 p-4">Required columns (U.code, Particulars, As per CWI (Qty)) not found.</p>`;
+            detailsModal.classList.remove('hidden');
+            return;
+        }
+
+        tableHtml = `<table class="min-w-full divide-y divide-gray-300 text-gray-800">
+            <thead class="bg-gray-200">
+                <tr>
+                    <th class="px-4 py-2 text-left text-xs font-bold text-gray-600 uppercase">U.Code/Sr.No</th>
+                    <th class="px-4 py-2 text-left text-xs font-bold text-gray-600 uppercase">Particulars</th>
+                    <th class="px-4 py-2 text-left text-xs font-bold text-gray-600 uppercase">As per CWI (Qty)</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">`;
+
+        data.forEach(row => {
+            tableHtml += `
+                <tr>
+                    <td class="px-4 py-2 whitespace-nowrap text-sm">${row[uCodeKey] || 'N/A'}</td>
+                    <td class="px-4 py-2 text-sm">${row[particularsKey] || ''}</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-sm text-right font-medium">${row[cwiQtyKey] || 0}</td>
+                </tr>`;
+        });
+        tableHtml += `</tbody></table>`;
+    }
+
+    detailsModalBody.innerHTML = tableHtml;
+    detailsModal.classList.remove('hidden');
+}
         function closeModal() {
             manualCheckModal.classList.add('hidden');
             currentModalCheckType = null;
@@ -1115,12 +1482,31 @@ async function generateErrorReport() {
             const allItemsFlat = Object.values(checklistConfig).flat();
             
             const isComplete = items.every(item => {
-                const parentItem = allItemsFlat.find(p => p.showsNext === item.id);
-                if (parentItem && manualChecksState[parentItem.id] !== 'yes') {
-                    return true;
-                }
-                return manualChecksState[item.id] !== null;
-            });
+    if (item.isDisclaimer) return true;
+
+    const allItemsFlat = Object.values(checklistConfig).flat();
+
+    const parentWithShowsNext = allItemsFlat.find(p => p.showsNext === item.id);
+    const parentWithShowsNextOnValues = allItemsFlat.find(p =>
+        p.showsNextOnValues && Object.values(p.showsNextOnValues).includes(item.id)
+    );
+
+    if (parentWithShowsNext) {
+        const triggerValue = parentWithShowsNext.showsNextOnValue || 'yes';
+        if (manualChecksState[parentWithShowsNext.id] !== triggerValue) return true;
+    }
+
+    if (parentWithShowsNextOnValues) {
+        const parentVal = manualChecksState[parentWithShowsNextOnValues.id];
+        const expectedChildId = parentWithShowsNextOnValues.showsNextOnValues[parentVal];
+        if (expectedChildId !== item.id) return true;
+    }
+
+    if (item.id === 'chasing_both_half' && manualChecksState['chasing_work'] !== 'Both') return true;
+    if (item.id === 'scaffolding_bamboo_deduction' && manualChecksState['scaffolding_material'] !== 'Bamboo') return true;
+
+    return manualChecksState[item.id] !== null;
+});
 
             let statusEl;
             if (checkType === 'concealed') {
@@ -1132,6 +1518,9 @@ async function generateErrorReport() {
             } else if (checkType === 'non_standard') {
                 statusEl = document.getElementById('status-non-standard');
             }
+            else if (checkType === 'deductions') {
+    statusEl = document.getElementById('status-deductions');
+}
 
             if (statusEl) {
                 statusEl.textContent = isComplete ? '✔' : '';
@@ -1144,35 +1533,70 @@ async function generateErrorReport() {
              updateChecklistButtonStatus('electrical');
              updateChecklistButtonStatus('pm_approval');
              updateChecklistButtonStatus('non_standard');
+             updateChecklistButtonStatus('deductions');
         }
 
         function areManualChecksComplete() {
-            const allItems = Object.values(checklistConfig).flat();
-            for (const item of allItems) {
-                const parentItem = allItems.find(p => p.showsNext === item.id);
-                if (parentItem && manualChecksState[parentItem.id] !== 'yes') {
-                    continue; 
-                }
-                if (manualChecksState[item.id] === null) {
-                    return false; 
-                }
-            }
-            return true;
+    const allItems = Object.values(checklistConfig).flat();
+    for (const item of allItems) {
+        // Skip disclaimer items — they are auto-set
+        if (item.isDisclaimer) continue;
+
+        // Find if this item is a conditional child of another item
+        const parentWithShowsNext = allItems.find(p => p.showsNext === item.id);
+        const parentWithShowsNextOnValues = allItems.find(p => 
+            p.showsNextOnValues && Object.values(p.showsNextOnValues).includes(item.id)
+        );
+
+        // Skip if parent uses showsNext and parent was NOT triggered
+        if (parentWithShowsNext) {
+            const triggerValue = parentWithShowsNext.showsNextOnValue || 'yes';
+            if (manualChecksState[parentWithShowsNext.id] !== triggerValue) continue;
         }
 
-        function getManualCheckErrors() {
-             const errors = [];
-             const allItems = Object.values(checklistConfig).flat();
-             for (const id in manualChecksState) {
-                 if (manualChecksState[id] === 'no') {
-                     const itemConfig = allItems.find(item => item.id === id);
-                     if (itemConfig) {
-                         errors.push(itemConfig);
-                     }
-                 }
-             }
-             return errors;
+        // Skip if parent uses showsNextOnValues and this child is not the mapped target
+        if (parentWithShowsNextOnValues) {
+            const parentVal = manualChecksState[parentWithShowsNextOnValues.id];
+            const expectedChildId = parentWithShowsNextOnValues.showsNextOnValues[parentVal];
+            if (expectedChildId !== item.id) continue;
         }
+
+        // Special case: chasing_both_half only required if chasing_work === 'Both'
+        if (item.id === 'chasing_both_half') {
+            if (manualChecksState['chasing_work'] !== 'Both') continue;
+        }
+
+        // Special case: scaffolding_bamboo_deduction only required if scaffolding_material === 'Bamboo'
+        if (item.id === 'scaffolding_bamboo_deduction') {
+            if (manualChecksState['scaffolding_material'] !== 'Bamboo') continue;
+        }
+
+        if (manualChecksState[item.id] === null) return false;
+    }
+    return true;
+}
+
+        function getManualCheckErrors() {
+    const errors = [];
+    const allItems = Object.values(checklistConfig).flat();
+    for (const id in manualChecksState) {
+        if (manualChecksState[id] === 'no') {
+            const itemConfig = allItems.find(item => item.id === id);
+            if (itemConfig) {
+                if (itemConfig.isDisclaimer) {
+                    const cache = detailsDataCache[id];
+                    errors.push({
+                        ...itemConfig,
+                        text: (cache && cache.message) ? cache.message : `Disclaimer flagged: ${id}`
+                    });
+                } else {
+                    errors.push(itemConfig);
+                }
+            }
+        }
+    }
+    return errors;
+}
 
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -1361,7 +1785,188 @@ return {
     data: relevantRows
 };
         }
+function analyzeDeductionsInMeasurement(config) {
+    const mstSheet = findSheet('Extracted Measurement Sheet');
+    if (!mstSheet) return { status: 'NO_MST_SHEET', data: [] };
 
+    const data = XLSX.utils.sheet_to_json(mstSheet);
+    // Find headers to get Qty column
+    const headers = XLSX.utils.sheet_to_json(mstSheet, { header: 1 })[0];
+    const qtyKey = findKey({ [headers[0]]: '' }, ['As per CWI (Qty)']) || headers[10]; // Fallback to index 10
+    const partKey = findKey({ [headers[0]]: '' }, ['Particulars']) || headers[1];
+
+    let relevantRows = [];
+    let insideSection = false;
+
+    for (const row of data) {
+        const part = (row[partKey] || "").toString().toLowerCase();
+        
+        if (part.includes(config.searchRange.startKeyword.toLowerCase())) insideSection = true;
+        if (config.searchRange.endKeyword !== "STOP_AT_END" && part.includes(config.searchRange.endKeyword.toLowerCase())) insideSection = false;
+
+        if (insideSection) {
+            const matchesFilter = config.filterKeywords.some(k => part.includes(k.toLowerCase()));
+            const isOriginalHeading = part === config.searchRange.startKeyword.toLowerCase();
+            
+            // Extract the deduction row, but skip the main heading of the section
+            if (matchesFilter && !isOriginalHeading) {
+                relevantRows.push(row);
+            }
+        }
+    }
+
+    const hasAnyQty = relevantRows.some(row => row[qtyKey] !== undefined && row[qtyKey] !== "" && parseFloat(row[qtyKey]) !== 0);
+
+    return {
+        status: relevantRows.length > 0 && hasAnyQty ? 'QTY_FOUND' : 'QTY_NOT_FOUND',
+        data: relevantRows
+    };
+}
+
+function analyzeTrenchingDisclaimer() {
+    const extractedSheet = findSheet('Extracted Data');
+    if (!extractedSheet || !extractedDataJson || extractedDataJson.length === 0) return { show: false };
+
+    const { uCodeKey, particularsKey, cwiQtyKey } = extractedDataKeys;
+    if (!uCodeKey || !particularsKey || !cwiQtyKey) return { show: false };
+
+    // Find trenching row
+    const trenchingRow = extractedDataJson.find(row => {
+        const part = (row[particularsKey] || '').toString().toLowerCase();
+        return part.includes('trenching work') || part.includes('trenching');
+    });
+
+    if (!trenchingRow) return { show: false };
+    const trenchingQty = parseFloat(trenchingRow[cwiQtyKey]) || 0;
+    if (trenchingQty <= 0) return { show: false };
+
+    // Check for "Existing flooring including bedding material"
+    const beddingRow = extractedDataJson.find(row => {
+        const part = (row[particularsKey] || '').toString().toLowerCase();
+        return part.includes('existing flooring') && part.includes('bedding material');
+    });
+
+    // Check for any row with UCode starting I_7.a through I_7.d
+    const i7Rows = extractedDataJson.filter(row => {
+        const ucode = (row[uCodeKey] || '').toString().trim().toUpperCase();
+        return ['I_7.A','I_7.B','I_7.C','I_7.D'].some(code => ucode.startsWith(code));
+    });
+
+    const beddingQty = beddingRow ? (parseFloat(beddingRow[cwiQtyKey]) || 0) : 0;
+    const i7HasQty = i7Rows.some(row => (parseFloat(row[cwiQtyKey]) || 0) > 0);
+
+    if (beddingQty > 0 || i7HasQty) {
+        return { 
+            show: true, 
+            message: `WARNING: Trenching work has a quantity (${trenchingQty}), and simultaneously quantities exist in "Existing flooring including bedding material" and/or items I_7.a–I_7.d. Trenching and these PCC/flooring items cannot have quantity at the same time. Please verify U.Code I_1.a.iv or I_7.a-I_7.d and remove one quantity or the other.` 
+        };
+    }
+    return { show: false };
+}
+function analyzeWaterproofingWallDeduction() {
+    const mstSheet = findSheet('Extracted Measurement Sheet');
+    if (!mstSheet) return { status: 'NO_MST_SHEET', data: [] };
+
+    const data = XLSX.utils.sheet_to_json(mstSheet);
+    const headers = XLSX.utils.sheet_to_json(mstSheet, { header: 1 })[0] || [];
+    
+    const partKey = headers[1] || 'Particulars';
+    const uCodeKey = headers[0] || 'U Code';
+    const qtyKey = headers[10] || 'As per CWI (Qty)';
+
+    let insideSection = false;
+    let relevantRows = [];
+    let foundI5 = false;
+
+    for (const row of data) {
+        const ucode = (row[uCodeKey] || '').toString().trim();
+        const part = (row[partKey] || '').toString().toLowerCase();
+
+        // Start when we find waterproofing treatment with I_5 ucode
+        if (ucode.startsWith('I_5') && part.includes('waterproofing')) {
+            insideSection = true;
+            foundI5 = true;
+            continue;
+        }
+
+        if (insideSection) {
+            // Stop when a new ucode appears that is different from I_5
+            if (ucode !== '' && !ucode.startsWith('I_5')) {
+                break;
+            }
+            // Capture wall rows
+            if (part.includes('wall')) {
+                const qty = parseFloat(row[qtyKey]) || 0;
+                if (qty !== 0) relevantRows.push(row);
+            }
+        }
+    }
+
+    const hasQty = relevantRows.length > 0;
+    return { status: hasQty ? 'QTY_FOUND' : 'QTY_NOT_FOUND', data: relevantRows, foundSection: foundI5 };
+}
+function analyzeSkirtingWidthDisclaimer() {
+    const mstSheet = findSheet('Extracted Measurement Sheet');
+    if (!mstSheet) return { show: false };
+
+    // Read as array to reliably find the Width column by header name
+    const rawRows = XLSX.utils.sheet_to_json(mstSheet, { header: 1, defval: '' });
+    if (rawRows.length < 2) return { show: false };
+
+    const headerRow = rawRows[0];
+
+    // Find column indices by header name (case-insensitive)
+    const findColIndex = (names) => {
+        return headerRow.findIndex(h => 
+            names.some(n => h.toString().toLowerCase().trim() === n.toLowerCase())
+        );
+    };
+
+    const uCodeColIdx = findColIndex(['u code', 'u.code', 'ucode', 'sr.no']);
+    const widthColIdx = findColIndex(['width', 'breadth', 'b', 'w']);
+
+    if (uCodeColIdx === -1 || widthColIdx === -1) {
+        // Fallback to positional: UCode=col0, Width=col23
+        const fallbackUCodeIdx = 0;
+        const fallbackWidthIdx = 23;
+        const problematicRows = rawRows.slice(1).filter(row => {
+            const ucode = (row[fallbackUCodeIdx] || '').toString().trim().toUpperCase();
+            if (!ucode.startsWith('I_11.C')) return false;
+            const width = parseFloat(row[fallbackWidthIdx]) || 0;
+            return width >= 1;
+        });
+        return {
+            show: problematicRows.length > 0,
+            message: `WARNING: U.Code I_11.c has a width value 1 or greater in measurement sheet. The breadth/height of skirting should not exceed 1. Please recheck the measurement sheet for U.Code I_11.c.`
+        };
+    }
+
+    // Use found column indices
+    const problematicRows = rawRows.slice(1).filter(row => {
+        const ucode = (row[uCodeColIdx] || '').toString().trim().toUpperCase();
+        if (!ucode.startsWith('I_11.C')) return false;
+        const width = parseFloat(row[widthColIdx]) || 0;
+        return width > 1;
+    });
+
+    return {
+        show: problematicRows.length > 0,
+        message: `WARNING: U.Code I_11.c has a width value 1 or greater in measurement sheet. The breadth/height of skirting should not exceed 1. Please recheck all rows with U.Code I_11.c.`
+    };
+}
+function analyzeChasingWork() {
+    if (!extractedDataJson || extractedDataJson.length === 0) return { status: 'NO_DATA', qty: 0 };
+    const { particularsKey, cwiQtyKey } = extractedDataKeys;
+    if (!particularsKey || !cwiQtyKey) return { status: 'KEYS_NOT_FOUND', qty: 0 };
+
+    const chasingRows = extractedDataJson.filter(row => {
+        const part = (row[particularsKey] || '').toString().toLowerCase();
+        return part.includes('chasing work');
+    });
+
+    const totalQty = chasingRows.reduce((sum, row) => sum + (parseFloat(row[cwiQtyKey]) || 0), 0);
+    return { status: totalQty > 0 ? 'QTY_FOUND' : 'QTY_NOT_FOUND', qty: totalQty, data: chasingRows };
+}
         /**
          * Analyzes a range of items, filters them, and checks if any have a positive CWI quantity.
          * Uses the new dynamic range finding logic.
