@@ -1396,11 +1396,12 @@ case 'waterproofing_wall_deduction_check':
 
     let tableHtml = '';
 
-    // --- 3. RENDER TABLE FOR QUANTITY EXCEED CHECK (Requires WO vs Post Audit) ---
+    // --- 3. RENDER TABLE FOR QUANTITY EXCEED CHECK (Requires WO vs CWI) ---
     if (itemConfig && itemConfig.type === 'quantity_exceed_check') {
-        const { uCodeKey, particularsKey, woQtyKey, postAuditQtyKey } = extractedDataKeys;
-        if (!uCodeKey || !particularsKey || !woQtyKey || !postAuditQtyKey) {
-            detailsModalBody.innerHTML = `<p class="text-red-600 p-4">Required columns (U.code, Particulars, WO Qty, Post Audit Qty) not found.</p>`;
+        const { uCodeKey, particularsKey, woQtyKey, cwiQtyKey } = extractedDataKeys;
+        
+        if (!uCodeKey || !particularsKey || !woQtyKey || !cwiQtyKey) {
+            detailsModalBody.innerHTML = `<p class="text-red-600 p-4">Required columns (U.code, Particulars, WO Qty, As per CWI Qty) not found.</p>`;
             detailsModal.classList.remove('hidden');
             return;
         }
@@ -1411,7 +1412,7 @@ case 'waterproofing_wall_deduction_check':
                     <th class="px-4 py-2 text-left text-xs font-bold text-gray-600 uppercase">U.Code/Sr.No</th>
                     <th class="px-4 py-2 text-left text-xs font-bold text-gray-600 uppercase">Particulars</th>
                     <th class="px-4 py-2 text-left text-xs font-bold text-gray-600 uppercase">As per WO - Qty</th>
-                    <th class="px-4 py-2 text-left text-xs font-bold text-gray-600 uppercase">As per Post Audit (Qty)</th>
+                    <th class="px-4 py-2 text-left text-xs font-bold text-gray-600 uppercase">As per CWI (Qty)</th>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">`;
@@ -1422,10 +1423,12 @@ case 'waterproofing_wall_deduction_check':
                     <td class="px-4 py-2 whitespace-nowrap text-sm">${row[uCodeKey] || 'N/A'}</td>
                     <td class="px-4 py-2 text-sm">${row[particularsKey] || ''}</td>
                     <td class="px-4 py-2 whitespace-nowrap text-sm text-right">${row[woQtyKey] || 0}</td>
-                    <td class="px-4 py-2 whitespace-nowrap text-sm text-right font-semibold text-red-600">${row[postAuditQtyKey] || 0}</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-sm text-right font-semibold text-red-600">${row[cwiQtyKey] || 0}</td>
                 </tr>`;
         });
         tableHtml += `</tbody></table>`;
+
+    
 
     // --- 4. RENDER TABLE FOR ALL OTHER CHECKS (CWI Quantity View) ---
     } else {
