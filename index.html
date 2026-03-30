@@ -293,7 +293,23 @@
 
         const checklistConfig = {
             concealed: [
-                { id: 'dismantling_photos', text: 'Appropriate photographs of dismantling provided', type: 'cwi_qty_check', keyword: 'dismantling' },
+            { 
+                id: 'dismantling_photos', 
+                text: 'Appropriate photographs of dismantling provided', 
+                type: 'cwi_qty_check', 
+                // Updated to include your specific list of dismantling-related items
+                keyword: [
+                    'dismantling', 
+                    'Existing flooring including bedding material', 
+                    'Existing Doors / Windows', 
+                    'Existing Rolling Shutter', 
+                    'Safety door', 
+                    'collapsible door', 
+                    'Existing Electrical fittings and fixtures', 
+                    'Miscellaneous items such as false ceilings' 
+                    
+                ] 
+            },
                 { id: 'pcc_photos', text: 'Appropriate Photos of PCC are provided for certification', type: 'cwi_qty_range_check', searchRange: { startUCode: ["I_7"], endUCode: ["I_8"] } },
                 { id: 'rcc_photos', text: 'Appropriate Photos of RCC in strong room are provided for certification', type: 'cwi_qty_check', keyword: 'strong room' },
                 { id: 'reinforcement_photos', text: 'Strong room reinforcement photographs provided', type: 'cwi_qty_check', keyword: 'reinforcement' },
@@ -2865,3 +2881,4 @@ function analyzeChasingWork() {
     </script>
 </body>
 </html>
+
