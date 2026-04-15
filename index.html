@@ -1001,7 +1001,7 @@ async function generateErrorReport() {
         case 'electrical': titleText = 'Check for Electrical Items'; break;
         case 'pm_approval': titleText = 'Non-Measureable items check'; break;
         case 'non_standard': titleText = 'Non-Standard Item Check'; break;
-        case 'deductions': titleText = 'Check for necessary deduction'; break; // New Title
+        case 'deductions': titleText = 'Check for necessary deduction'; break;
     }
     modalTitle.textContent = titleText;
 
@@ -1011,15 +1011,37 @@ async function generateErrorReport() {
     items.forEach(item => {
         let detailsButtonHtml = '';
         let dataCheckStatus = 'NA';
+        let shouldHideItem = false; // New flag for scaffolding filtering
+
+        // --- SCAFFOLDING VISIBILITY LOGIC ---
+        // We only show scaffolding questions if U.Code I_21.i has a quantity > 0
+        const scaffoldingIds = [
+            'scaffolding_type', 
+            'scaffolding_double_floor', 
+            'scaffolding_material', 
+            'scaffolding_bamboo_deduction'
+        ];
+
+        if (scaffoldingIds.includes(item.id)) {
+            const relevantData = findRelevantDataByUCode('I_21.i');
+            const hasQty = relevantData.some(row => (parseFloat(row[extractedDataKeys.cwiQtyKey]) || 0) > 0);
+            
+            if (!hasQty) {
+                shouldHideItem = true; 
+                manualChecksState[item.id] = 'na'; // Auto-set to NA if hidden
+            }
+        }
+
+        // Skip the rest of the loop for this item if it's marked to hide
+        if (shouldHideItem) return;
 
         // --- DATA ANALYSIS LOGIC ---
         
-        // 1. Logic for Deductions (Reading from Extracted Measurement Sheet)
+        // 1. Logic for Deductions
         if (item.type === 'deduction_logic_check') {
             const analysis = analyzeDeductionsInMeasurement(item);
             dataCheckStatus = analysis.status;
             detailsDataCache[item.id] = analysis;
-            // Always enable details button for deductions to show your custom error message if data is missing
             detailsButtonHtml = `<button id="details-${item.id}" class="details-button">Details</button>`;
 
         // 2. Logic for Quantity Exceedance
@@ -1037,81 +1059,75 @@ async function generateErrorReport() {
             dataCheckStatus = analysis.status;
             detailsDataCache[item.id] = analysis;
             const isButtonActive = (dataCheckStatus === 'DATA_WITH_POSITIVE_QTY');
-detailsButtonHtml = `<button id="details-${item.id}" class="details-button" ${!isButtonActive ? 'disabled' : ''}>Details</button>`;
+            detailsButtonHtml = `<button id="details-${item.id}" class="details-button" ${!isButtonActive ? 'disabled' : ''}>Details</button>`;
 
         } else if (item.type === 'trenching_disclaimer') {
-    const analysis = analyzeTrenchingDisclaimer();
-    detailsDataCache[item.id] = analysis;
-    if (analysis.show) {
-        // Render disclaimer directly, no radio buttons
-        const disclaimerHtml = `
-            <div id="container-${item.id}" class="border-2 border-red-500 rounded-md p-4 bg-red-50 mb-3">
-                <p class="font-bold text-red-700 text-base">⚠️ DISCLAIMER: ${analysis.message}</p>
-            </div>`;
-        modalBody.insertAdjacentHTML('beforeend', disclaimerHtml);
-        // Initialize state as auto-flagged for report
-        manualChecksState[item.id] = 'no';
-    }
-    return; // Skip normal rendering
+            const analysis = analyzeTrenchingDisclaimer();
+            detailsDataCache[item.id] = analysis;
+            if (analysis.show) {
+                const disclaimerHtml = `
+                    <div id="container-${item.id}" class="border-2 border-red-500 rounded-md p-4 bg-red-50 mb-3">
+                        <p class="font-bold text-red-700 text-base">⚠️ DISCLAIMER: ${analysis.message}</p>
+                    </div>`;
+                modalBody.insertAdjacentHTML('beforeend', disclaimerHtml);
+                manualChecksState[item.id] = 'no';
+            }
+            return; 
 
-} else if (item.type === 'skirting_width_disclaimer') {
-    const analysis = analyzeSkirtingWidthDisclaimer();
-    detailsDataCache[item.id] = analysis;
-    if (analysis.show) {
-        const disclaimerHtml = `
-            <div id="container-${item.id}" class="border-2 border-red-500 rounded-md p-4 bg-red-50 mb-3">
-                <p class="font-bold text-red-700 text-base">⚠️ DISCLAIMER: ${analysis.message}</p>
-            </div>`;
-        modalBody.insertAdjacentHTML('beforeend', disclaimerHtml);
-        manualChecksState[item.id] = 'no';
-    } else {
-        manualChecksState[item.id] = 'na';
-    }
-    return;
+        } else if (item.type === 'skirting_width_disclaimer') {
+            const analysis = analyzeSkirtingWidthDisclaimer();
+            detailsDataCache[item.id] = analysis;
+            if (analysis.show) {
+                const disclaimerHtml = `
+                    <div id="container-${item.id}" class="border-2 border-red-500 rounded-md p-4 bg-red-50 mb-3">
+                        <p class="font-bold text-red-700 text-base">⚠️ DISCLAIMER: ${analysis.message}</p>
+                    </div>`;
+                modalBody.insertAdjacentHTML('beforeend', disclaimerHtml);
+                manualChecksState[item.id] = 'no';
+            } else {
+                manualChecksState[item.id] = 'na';
+            }
+            return;
 
-} else if (item.type === 'waterproofing_wall_deduction_check') {
-    const analysis = analyzeWaterproofingWallDeduction();
-    dataCheckStatus = analysis.status;
-    detailsDataCache[item.id] = analysis;
-    detailsButtonHtml = `<button id="details-${item.id}" class="details-button" ${analysis.data.length === 0 ? 'disabled' : ''}>Details</button>`;
+        } else if (item.type === 'waterproofing_wall_deduction_check') {
+            const analysis = analyzeWaterproofingWallDeduction();
+            dataCheckStatus = analysis.status;
+            detailsDataCache[item.id] = analysis;
+            detailsButtonHtml = `<button id="details-${item.id}" class="details-button" ${analysis.data.length === 0 ? 'disabled' : ''}>Details</button>`;
 
-} else if (item.type === 'chasing_check') {
-    const analysis = analyzeChasingWork();
-    dataCheckStatus = analysis.status;
-    detailsDataCache[item.id] = analysis;
-    detailsButtonHtml = `<button id="details-${item.id}" class="details-button" ${analysis.qty === 0 ? 'disabled' : ''}>Details</button>`;
+        } else if (item.type === 'chasing_check') {
+            const analysis = analyzeChasingWork();
+            dataCheckStatus = analysis.status;
+            detailsDataCache[item.id] = analysis;
+            detailsButtonHtml = `<button id="details-${item.id}" class="details-button" ${analysis.qty === 0 ? 'disabled' : ''}>Details</button>`;
 
-} else if (item.type === 'scaffolding_check' || item.type === 'scaffolding_material_check') {
-    if (item.ucode) {
-        const relevantData = findRelevantDataByUCode(item.ucode);
-        detailsDataCache[item.id] = { data: relevantData };
-        const hasQty = relevantData.some(row => (parseFloat(row[extractedDataKeys.cwiQtyKey]) || 0) > 0);
-        dataCheckStatus = hasQty ? 'DATA_WITH_POSITIVE_QTY' : 'DATA_WITH_ZERO_QTY';
-        detailsButtonHtml = `<button id="details-${item.id}" class="details-button" ${!hasQty ? 'disabled' : ''}>Details</button>`;
-    }
-// 4. Logic for Simple Keyword/UCode checks
-       } else if (item.type === 'cwi_qty_check' || item.type === 'simple_check') {
-    if (item.keyword || item.ucode) {
-        let relevantData = item.ucode ? findRelevantDataByUCode(item.ucode) : findRelevantData(item.keyword);
-        detailsDataCache[item.id] = { data: relevantData };
-        if (relevantData.length > 0) {
-            const hasPositiveQty = extractedDataKeys.cwiQtyKey ? relevantData.some(row => (parseFloat(row[extractedDataKeys.cwiQtyKey]) || 0) > 0) : false;
-            dataCheckStatus = hasPositiveQty ? 'DATA_WITH_POSITIVE_QTY' : 'DATA_WITH_ZERO_QTY';
-        } else {
-            dataCheckStatus = 'NO_DATA';
+        } else if (item.type === 'scaffolding_check' || item.type === 'scaffolding_material_check') {
+            if (item.ucode) {
+                const relevantData = findRelevantDataByUCode(item.ucode);
+                detailsDataCache[item.id] = { data: relevantData };
+                dataCheckStatus = 'DATA_WITH_POSITIVE_QTY'; // Logic reached here only if hasQty was true
+                detailsButtonHtml = `<button id="details-${item.id}" class="details-button">Details</button>`;
+            }
+
+        } else if (item.type === 'cwi_qty_check' || item.type === 'simple_check') {
+            if (item.keyword || item.ucode) {
+                let relevantData = item.ucode ? findRelevantDataByUCode(item.ucode) : findRelevantData(item.keyword);
+                detailsDataCache[item.id] = { data: relevantData };
+                if (relevantData.length > 0) {
+                    const hasPositiveQty = extractedDataKeys.cwiQtyKey ? relevantData.some(row => (parseFloat(row[extractedDataKeys.cwiQtyKey]) || 0) > 0) : false;
+                    dataCheckStatus = hasPositiveQty ? 'DATA_WITH_POSITIVE_QTY' : 'DATA_WITH_ZERO_QTY';
+                } else {
+                    dataCheckStatus = 'NO_DATA';
+                }
+                const noDetailsItems = ['rmc_shifted', 'chasing_both_half'];
+                if (!noDetailsItems.includes(item.id)) {
+                    const isButtonActive = dataCheckStatus === 'DATA_WITH_POSITIVE_QTY';
+                    detailsButtonHtml = `<button id="details-${item.id}" class="details-button" ${!isButtonActive ? 'disabled' : ''}>Details</button>`;
+                }
+            }
         }
-        // No details button for these items
-        const noDetailsItems = ['rmc_shifted', 'chasing_both_half'];
-        if (!noDetailsItems.includes(item.id)) {
-            const isButtonActive = dataCheckStatus === 'DATA_WITH_POSITIVE_QTY';
-            detailsButtonHtml = `<button id="details-${item.id}" class="details-button" ${!isButtonActive ? 'disabled' : ''}>Details</button>`;
-        }
-    }
-}
         
         // --- UI GENERATION ---
-
-        // Custom labels for the Deduction section
         const isDeduction = currentModalCheckType === 'deductions';
         const yesLabel = "Yes";
         const noLabel = isDeduction ? "Deduction Missed out" : "No";
@@ -1120,89 +1136,78 @@ detailsButtonHtml = `<button id="details-${item.id}" class="details-button" ${!i
         const currentState = manualChecksState[item.id];
         const conditionalHide = item.isConditional ? 'style="display: none;"' : '';
         
-        // Build radio buttons based on item type
-let radioButtonsHtml = '';
+        let radioButtonsHtml = '';
 
-if ((item.isMultiOption && item.options) || item.type === 'chasing_check') {
-    // Custom options for scaffolding and chasing
-    const optionsList = item.options || ['Civil vendors bill', 'HVAC vendors bill', 'Both'];
-    const colorClasses = ['text-blue-700', 'text-purple-700', 'text-indigo-700'];
-    optionsList.forEach((optValue, idx) => {
-        const checked = manualChecksState[item.id] === optValue ? 'checked' : '';
-        radioButtonsHtml += `
-            <label class="flex items-center space-x-2 cursor-pointer">
-                <input type="radio" name="${item.id}" value="${optValue}" data-check-status="${dataCheckStatus}" class="form-radio text-indigo-600" ${checked}>
-                <span class="${colorClasses[idx] || 'text-gray-700'} font-semibold">${optValue}</span>
-            </label>`;
-    });
-} else {
-    const yesLabel = "Yes";
-    const noLabel = isDeduction ? "Deduction Missed out" : "No";
-    const naLabel = isDeduction ? "Deduction Not required" : "N/A";
+        if ((item.isMultiOption && item.options) || item.type === 'chasing_check') {
+            const optionsList = item.options || ['Civil vendors bill', 'HVAC vendors bill', 'Both'];
+            const colorClasses = ['text-blue-700', 'text-purple-700', 'text-indigo-700'];
+            optionsList.forEach((optValue, idx) => {
+                const checked = manualChecksState[item.id] === optValue ? 'checked' : '';
+                radioButtonsHtml += `
+                    <label class="flex items-center space-x-2 cursor-pointer">
+                        <input type="radio" name="${item.id}" value="${optValue}" data-check-status="${dataCheckStatus}" class="form-radio text-indigo-600" ${checked}>
+                        <span class="${colorClasses[idx] || 'text-gray-700'} font-semibold">${optValue}</span>
+                    </label>`;
+            });
+        } else {
+            const yesNoOnlyItems = ['rmc_challan', 'rmc_shifted', 'chasing_both_half', 'scaffolding_double_floor', 'scaffolding_bamboo_deduction'];
+            const hideNA = yesNoOnlyItems.includes(item.id);
 
-    // Items that should only show Yes/No (no N/A option)
-    const yesNoOnlyItems = ['rmc_challan', 'rmc_shifted', 'chasing_both_half', 'scaffolding_double_floor', 'scaffolding_bamboo_deduction'];
-    const hideNA = yesNoOnlyItems.includes(item.id);
+            radioButtonsHtml = `
+                <label class="flex items-center space-x-2 cursor-pointer">
+                    <input type="radio" name="${item.id}" value="yes" data-check-status="${dataCheckStatus}" class="form-radio text-green-600 focus:ring-green-500" ${currentState === 'yes' ? 'checked' : ''}>
+                    <span class="text-green-700 font-semibold">${yesLabel}</span>
+                </label>
+                <label class="flex items-center space-x-2 cursor-pointer">
+                    <input type="radio" name="${item.id}" value="no" data-check-status="${dataCheckStatus}" class="form-radio text-red-600 focus:ring-red-500" ${currentState === 'no' ? 'checked' : ''}>
+                    <span class="text-red-700 font-semibold">${noLabel}</span>
+                </label>
+                ${hideNA ? '' : `
+                <label class="flex items-center space-x-2 cursor-pointer">
+                    <input type="radio" name="${item.id}" value="na" data-check-status="${dataCheckStatus}" class="form-radio text-gray-500 focus:ring-gray-400" ${currentState === 'na' ? 'checked' : ''}>
+                    <span class="text-gray-600 font-semibold">${naLabel}</span>
+                </label>`}`;
+        }
 
-    radioButtonsHtml = `
-        <label class="flex items-center space-x-2 cursor-pointer">
-            <input type="radio" name="${item.id}" value="yes" data-check-status="${dataCheckStatus}" class="form-radio text-green-600 focus:ring-green-500" ${currentState === 'yes' ? 'checked' : ''}>
-            <span class="text-green-700 font-semibold">${yesLabel}</span>
-        </label>
-        <label class="flex items-center space-x-2 cursor-pointer">
-            <input type="radio" name="${item.id}" value="no" data-check-status="${dataCheckStatus}" class="form-radio text-red-600 focus:ring-red-500" ${currentState === 'no' ? 'checked' : ''}>
-            <span class="text-red-700 font-semibold">${noLabel}</span>
-        </label>
-        ${hideNA ? '' : `
-        <label class="flex items-center space-x-2 cursor-pointer">
-            <input type="radio" name="${item.id}" value="na" data-check-status="${dataCheckStatus}" class="form-radio text-gray-500 focus:ring-gray-400" ${currentState === 'na' ? 'checked' : ''}>
-            <span class="text-gray-600 font-semibold">${naLabel}</span>
-        </label>`}`;
-}
-
-const itemHtml = `
-    <div id="container-${item.id}" class="border rounded-md p-3 bg-gray-50 mb-3" ${conditionalHide}>
-        <div class="flex justify-between items-center mb-2">
-            <label class="block text-gray-700 font-medium">${item.text}</label>
-            ${detailsButtonHtml}
-        </div>
-        <div class="flex items-center space-x-6 flex-wrap gap-y-2">
-            ${radioButtonsHtml}
-        </div>
-    </div>
-`;
-modalBody.insertAdjacentHTML('beforeend', itemHtml);
+        const itemHtml = `
+            <div id="container-${item.id}" class="border rounded-md p-3 bg-gray-50 mb-3" ${conditionalHide}>
+                <div class="flex justify-between items-center mb-2">
+                    <label class="block text-gray-700 font-medium">${item.text}</label>
+                    ${detailsButtonHtml}
+                </div>
+                <div class="flex items-center space-x-6 flex-wrap gap-y-2">
+                    ${radioButtonsHtml}
+                </div>
+            </div>
+        `;
+        modalBody.insertAdjacentHTML('beforeend', itemHtml);
     });
 
     // Handle initial visibility for conditional items
     items.forEach(item => {
-    // Handle showsNext (triggered on specific value)
-    if (item.showsNext) {
-        const triggerValue = item.showsNextOnValue || 'yes';
-        const childContainer = document.getElementById(`container-${item.showsNext}`);
-        if (childContainer && manualChecksState[item.id] === triggerValue) {
-            childContainer.style.display = 'block';
+        if (item.showsNext) {
+            const triggerValue = item.showsNextOnValue || 'yes';
+            const childContainer = document.getElementById(`container-${item.showsNext}`);
+            if (childContainer && manualChecksState[item.id] === triggerValue) {
+                childContainer.style.display = 'block';
+            }
         }
-    }
 
-    // Handle showsNextOnValues (multiple conditional children)
-    if (item.showsNextOnValues) {
-        const currentVal = manualChecksState[item.id];
-        const targetId = currentVal ? item.showsNextOnValues[currentVal] : null;
-        Object.values(item.showsNextOnValues).forEach(childId => {
-            const el = document.getElementById(`container-${childId}`);
-            if (el) el.style.display = (childId === targetId) ? 'block' : 'none';
-        });
-    }
+        if (item.showsNextOnValues) {
+            const currentVal = manualChecksState[item.id];
+            const targetId = currentVal ? item.showsNextOnValues[currentVal] : null;
+            Object.values(item.showsNextOnValues).forEach(childId => {
+                const el = document.getElementById(`container-${childId}`);
+                if (el) el.style.display = (childId === targetId) ? 'block' : 'none';
+            });
+        }
 
-    // Handle chasing special case
-    if (item.id === 'chasing_work') {
-        const el = document.getElementById('container-chasing_both_half');
-        if (el) el.style.display = (manualChecksState['chasing_work'] === 'Both') ? 'block' : 'none';
-    }
-});
+        if (item.id === 'chasing_work') {
+            const el = document.getElementById('container-chasing_both_half');
+            if (el) el.style.display = (manualChecksState['chasing_work'] === 'Both') ? 'block' : 'none';
+        }
+    });
 
-    // Re-attach listeners to new elements
     modalBody.querySelectorAll('input[type="radio"]').forEach(radio => radio.addEventListener('click', handleRadioClick));
     modalBody.querySelectorAll('button[id^="details-"]').forEach(button => button.addEventListener('click', handleDetailsClick));
 
