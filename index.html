@@ -995,7 +995,6 @@ async function generateErrorReport() {
     detailsDataCache = {};
     let titleText = '';
     
-    // Set Modal Title based on checkType
     switch (checkType) {
         case 'concealed': titleText = 'Check for Concealed Items'; break;
         case 'electrical': titleText = 'Check for Electrical Items'; break;
@@ -1004,213 +1003,97 @@ async function generateErrorReport() {
         case 'deductions': titleText = 'Check for necessary deduction'; break;
     }
     modalTitle.textContent = titleText;
-
     modalBody.innerHTML = '';
     const items = checklistConfig[checkType];
+
+    // Determine if scaffolding is required globally for this check
+    const scaffoldingData = findRelevantDataByUCode('I_21.i');
+    const isScaffoldingRequired = scaffoldingData.some(row => (parseFloat(row[extractedDataKeys.cwiQtyKey]) || 0) > 0);
 
     items.forEach(item => {
         let detailsButtonHtml = '';
         let dataCheckStatus = 'NA';
-        let shouldHideItem = false; // New flag for scaffolding filtering
-
-        // --- SCAFFOLDING VISIBILITY LOGIC ---
-        // We only show scaffolding questions if U.Code I_21.i has a quantity > 0
-        const scaffoldingIds = [
-            'scaffolding_type', 
-            'scaffolding_double_floor', 
-            'scaffolding_material', 
-            'scaffolding_bamboo_deduction'
-        ];
-
-        if (scaffoldingIds.includes(item.id)) {
-            const relevantData = findRelevantDataByUCode('I_21.i');
-            const hasQty = relevantData.some(row => (parseFloat(row[extractedDataKeys.cwiQtyKey]) || 0) > 0);
-            
-            if (!hasQty) {
-                shouldHideItem = true; 
-                manualChecksState[item.id] = 'na'; // Auto-set to NA if hidden
-            }
+        
+        // --- SCAFFOLDING FILTERING ---
+        const scaffoldingIds = ['scaffolding_type', 'scaffolding_double_floor', 'scaffolding_material', 'scaffolding_bamboo_deduction'];
+        if (scaffoldingIds.includes(item.id) && !isScaffoldingRequired) {
+            manualChecksState[item.id] = 'na'; // Mark as NA in state so validation passes
+            return; // Skip rendering
         }
 
-        // Skip the rest of the loop for this item if it's marked to hide
-        if (shouldHideItem) return;
-
         // --- DATA ANALYSIS LOGIC ---
-        
-        // 1. Logic for Deductions
         if (item.type === 'deduction_logic_check') {
             const analysis = analyzeDeductionsInMeasurement(item);
             dataCheckStatus = analysis.status;
             detailsDataCache[item.id] = analysis;
             detailsButtonHtml = `<button id="details-${item.id}" class="details-button">Details</button>`;
-
-        // 2. Logic for Quantity Exceedance
         } else if (item.type === 'quantity_exceed_check') {
             const analysis = analyzeSearchRange(item.searchRange);
             dataCheckStatus = analysis.status;
             detailsDataCache[item.id] = analysis;
-            const isRangeFound = dataCheckStatus !== 'NOT_FOUND' && dataCheckStatus !== 'KEYS_NOT_FOUND';
-            detailsButtonHtml = `<button id="details-${item.id}" class="details-button" ${!isRangeFound ? 'disabled' : ''}>Details</button>`;
-        
-        // 3. Logic for CWI Quantity Ranges
+            detailsButtonHtml = `<button id="details-${item.id}" class="details-button" ${dataCheckStatus.includes('NOT_FOUND') ? 'disabled' : ''}>Details</button>`;
         } else if (item.type === 'cwi_qty_range_check' || item.type === 'cwi_qty_filtered_range_check') {
             const filter = item.type === 'cwi_qty_filtered_range_check' ? item.filterKeyword : null;
             const analysis = analyzeCwiQtyInRange(item.searchRange, filter);
             dataCheckStatus = analysis.status;
             detailsDataCache[item.id] = analysis;
-            const isButtonActive = (dataCheckStatus === 'DATA_WITH_POSITIVE_QTY');
-            detailsButtonHtml = `<button id="details-${item.id}" class="details-button" ${!isButtonActive ? 'disabled' : ''}>Details</button>`;
-
-        } else if (item.type === 'trenching_disclaimer') {
-            const analysis = analyzeTrenchingDisclaimer();
+            detailsButtonHtml = `<button id="details-${item.id}" class="details-button" ${dataCheckStatus !== 'DATA_WITH_POSITIVE_QTY' ? 'disabled' : ''}>Details</button>`;
+        } else if (item.type === 'trenching_disclaimer' || item.type === 'skirting_width_disclaimer') {
+            const analysis = item.type === 'trenching_disclaimer' ? analyzeTrenchingDisclaimer() : analyzeSkirtingWidthDisclaimer();
             detailsDataCache[item.id] = analysis;
             if (analysis.show) {
-                const disclaimerHtml = `
-                    <div id="container-${item.id}" class="border-2 border-red-500 rounded-md p-4 bg-red-50 mb-3">
-                        <p class="font-bold text-red-700 text-base">⚠️ DISCLAIMER: ${analysis.message}</p>
-                    </div>`;
-                modalBody.insertAdjacentHTML('beforeend', disclaimerHtml);
+                modalBody.insertAdjacentHTML('beforeend', `<div class="border-2 border-red-500 rounded-md p-4 bg-red-50 mb-3"><p class="font-bold text-red-700 text-base">⚠️ DISCLAIMER: ${analysis.message}</p></div>`);
                 manualChecksState[item.id] = 'no';
-            }
-            return; 
-
-        } else if (item.type === 'skirting_width_disclaimer') {
-            const analysis = analyzeSkirtingWidthDisclaimer();
-            detailsDataCache[item.id] = analysis;
-            if (analysis.show) {
-                const disclaimerHtml = `
-                    <div id="container-${item.id}" class="border-2 border-red-500 rounded-md p-4 bg-red-50 mb-3">
-                        <p class="font-bold text-red-700 text-base">⚠️ DISCLAIMER: ${analysis.message}</p>
-                    </div>`;
-                modalBody.insertAdjacentHTML('beforeend', disclaimerHtml);
-                manualChecksState[item.id] = 'no';
-            } else {
-                manualChecksState[item.id] = 'na';
-            }
+            } else { manualChecksState[item.id] = 'na'; }
             return;
-
         } else if (item.type === 'waterproofing_wall_deduction_check') {
             const analysis = analyzeWaterproofingWallDeduction();
             dataCheckStatus = analysis.status;
             detailsDataCache[item.id] = analysis;
             detailsButtonHtml = `<button id="details-${item.id}" class="details-button" ${analysis.data.length === 0 ? 'disabled' : ''}>Details</button>`;
-
         } else if (item.type === 'chasing_check') {
             const analysis = analyzeChasingWork();
             dataCheckStatus = analysis.status;
             detailsDataCache[item.id] = analysis;
             detailsButtonHtml = `<button id="details-${item.id}" class="details-button" ${analysis.qty === 0 ? 'disabled' : ''}>Details</button>`;
-
-        } else if (item.type === 'scaffolding_check' || item.type === 'scaffolding_material_check') {
-            if (item.ucode) {
-                const relevantData = findRelevantDataByUCode(item.ucode);
-                detailsDataCache[item.id] = { data: relevantData };
-                dataCheckStatus = 'DATA_WITH_POSITIVE_QTY'; // Logic reached here only if hasQty was true
-                detailsButtonHtml = `<button id="details-${item.id}" class="details-button">Details</button>`;
-            }
-
+        } else if (item.ucode && (item.type === 'scaffolding_check' || item.type === 'scaffolding_material_check')) {
+            const relevantData = findRelevantDataByUCode(item.ucode);
+            detailsDataCache[item.id] = { data: relevantData };
+            dataCheckStatus = 'DATA_WITH_POSITIVE_QTY';
+            detailsButtonHtml = `<button id="details-${item.id}" class="details-button">Details</button>`;
         } else if (item.type === 'cwi_qty_check' || item.type === 'simple_check') {
-            if (item.keyword || item.ucode) {
-                let relevantData = item.ucode ? findRelevantDataByUCode(item.ucode) : findRelevantData(item.keyword);
-                detailsDataCache[item.id] = { data: relevantData };
-                if (relevantData.length > 0) {
-                    const hasPositiveQty = extractedDataKeys.cwiQtyKey ? relevantData.some(row => (parseFloat(row[extractedDataKeys.cwiQtyKey]) || 0) > 0) : false;
-                    dataCheckStatus = hasPositiveQty ? 'DATA_WITH_POSITIVE_QTY' : 'DATA_WITH_ZERO_QTY';
-                } else {
-                    dataCheckStatus = 'NO_DATA';
-                }
-                const noDetailsItems = ['rmc_shifted', 'chasing_both_half'];
-                if (!noDetailsItems.includes(item.id)) {
-                    const isButtonActive = dataCheckStatus === 'DATA_WITH_POSITIVE_QTY';
-                    detailsButtonHtml = `<button id="details-${item.id}" class="details-button" ${!isButtonActive ? 'disabled' : ''}>Details</button>`;
-                }
+            let relevantData = item.ucode ? findRelevantDataByUCode(item.ucode) : findRelevantData(item.keyword);
+            detailsDataCache[item.id] = { data: relevantData };
+            dataCheckStatus = relevantData.length > 0 ? (relevantData.some(row => parseFloat(row[extractedDataKeys.cwiQtyKey]) > 0) ? 'DATA_WITH_POSITIVE_QTY' : 'DATA_WITH_ZERO_QTY') : 'NO_DATA';
+            if (!['rmc_shifted', 'chasing_both_half'].includes(item.id)) {
+                detailsButtonHtml = `<button id="details-${item.id}" class="details-button" ${dataCheckStatus !== 'DATA_WITH_POSITIVE_QTY' ? 'disabled' : ''}>Details</button>`;
             }
         }
-        
-        // --- UI GENERATION ---
-        const isDeduction = currentModalCheckType === 'deductions';
-        const yesLabel = "Yes";
-        const noLabel = isDeduction ? "Deduction Missed out" : "No";
-        const naLabel = isDeduction ? "Deduction Not required" : "N/A";
 
+        // UI Generation
+        const isDeduction = currentModalCheckType === 'deductions';
         const currentState = manualChecksState[item.id];
-        const conditionalHide = item.isConditional ? 'style="display: none;"' : '';
+        const isMulti = (item.isMultiOption && item.options) || item.type === 'chasing_check';
         
         let radioButtonsHtml = '';
-
-        if ((item.isMultiOption && item.options) || item.type === 'chasing_check') {
-            const optionsList = item.options || ['Civil vendors bill', 'HVAC vendors bill', 'Both'];
-            const colorClasses = ['text-blue-700', 'text-purple-700', 'text-indigo-700'];
-            optionsList.forEach((optValue, idx) => {
-                const checked = manualChecksState[item.id] === optValue ? 'checked' : '';
-                radioButtonsHtml += `
-                    <label class="flex items-center space-x-2 cursor-pointer">
-                        <input type="radio" name="${item.id}" value="${optValue}" data-check-status="${dataCheckStatus}" class="form-radio text-indigo-600" ${checked}>
-                        <span class="${colorClasses[idx] || 'text-gray-700'} font-semibold">${optValue}</span>
-                    </label>`;
+        if (isMulti) {
+            const opts = item.options || ['Civil vendors bill', 'HVAC vendors bill', 'Both'];
+            opts.forEach(opt => {
+                radioButtonsHtml += `<label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="${item.id}" value="${opt}" data-check-status="${dataCheckStatus}" class="form-radio text-indigo-600" ${currentState === opt ? 'checked' : ''}><span class="text-gray-700 font-semibold">${opt}</span></label>`;
             });
         } else {
-            const yesNoOnlyItems = ['rmc_challan', 'rmc_shifted', 'chasing_both_half', 'scaffolding_double_floor', 'scaffolding_bamboo_deduction'];
-            const hideNA = yesNoOnlyItems.includes(item.id);
-
-            radioButtonsHtml = `
-                <label class="flex items-center space-x-2 cursor-pointer">
-                    <input type="radio" name="${item.id}" value="yes" data-check-status="${dataCheckStatus}" class="form-radio text-green-600 focus:ring-green-500" ${currentState === 'yes' ? 'checked' : ''}>
-                    <span class="text-green-700 font-semibold">${yesLabel}</span>
-                </label>
-                <label class="flex items-center space-x-2 cursor-pointer">
-                    <input type="radio" name="${item.id}" value="no" data-check-status="${dataCheckStatus}" class="form-radio text-red-600 focus:ring-red-500" ${currentState === 'no' ? 'checked' : ''}>
-                    <span class="text-red-700 font-semibold">${noLabel}</span>
-                </label>
-                ${hideNA ? '' : `
-                <label class="flex items-center space-x-2 cursor-pointer">
-                    <input type="radio" name="${item.id}" value="na" data-check-status="${dataCheckStatus}" class="form-radio text-gray-500 focus:ring-gray-400" ${currentState === 'na' ? 'checked' : ''}>
-                    <span class="text-gray-600 font-semibold">${naLabel}</span>
-                </label>`}`;
+            const hideNA = ['rmc_challan', 'rmc_shifted', 'chasing_both_half', 'scaffolding_double_floor', 'scaffolding_bamboo_deduction'].includes(item.id);
+            radioButtonsHtml = `<label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="${item.id}" value="yes" data-check-status="${dataCheckStatus}" class="form-radio text-green-600" ${currentState === 'yes' ? 'checked' : ''}><span class="text-green-700 font-semibold">Yes</span></label>
+                                <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="${item.id}" value="no" data-check-status="${dataCheckStatus}" class="form-radio text-red-600" ${currentState === 'no' ? 'checked' : ''}><span class="text-red-700 font-semibold">${isDeduction ? 'Missed' : 'No'}</span></label>
+                                ${hideNA ? '' : `<label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="${item.id}" value="na" data-check-status="${dataCheckStatus}" class="form-radio text-gray-500" ${currentState === 'na' ? 'checked' : ''}><span class="text-gray-600 font-semibold">${isDeduction ? 'Not Required' : 'N/A'}</span></label>`}`;
         }
 
-        const itemHtml = `
-            <div id="container-${item.id}" class="border rounded-md p-3 bg-gray-50 mb-3" ${conditionalHide}>
-                <div class="flex justify-between items-center mb-2">
-                    <label class="block text-gray-700 font-medium">${item.text}</label>
-                    ${detailsButtonHtml}
-                </div>
-                <div class="flex items-center space-x-6 flex-wrap gap-y-2">
-                    ${radioButtonsHtml}
-                </div>
-            </div>
-        `;
-        modalBody.insertAdjacentHTML('beforeend', itemHtml);
+        modalBody.insertAdjacentHTML('beforeend', `<div id="container-${item.id}" class="border rounded-md p-3 bg-gray-50 mb-3" ${item.isConditional ? 'style="display: none;"' : ''}><div class="flex justify-between items-center mb-2"><label class="block text-gray-700 font-medium">${item.text}</label>${detailsButtonHtml}</div><div class="flex items-center space-x-6 flex-wrap gap-y-2">${radioButtonsHtml}</div></div>`);
     });
 
-    // Handle initial visibility for conditional items
-    items.forEach(item => {
-        if (item.showsNext) {
-            const triggerValue = item.showsNextOnValue || 'yes';
-            const childContainer = document.getElementById(`container-${item.showsNext}`);
-            if (childContainer && manualChecksState[item.id] === triggerValue) {
-                childContainer.style.display = 'block';
-            }
-        }
-
-        if (item.showsNextOnValues) {
-            const currentVal = manualChecksState[item.id];
-            const targetId = currentVal ? item.showsNextOnValues[currentVal] : null;
-            Object.values(item.showsNextOnValues).forEach(childId => {
-                const el = document.getElementById(`container-${childId}`);
-                if (el) el.style.display = (childId === targetId) ? 'block' : 'none';
-            });
-        }
-
-        if (item.id === 'chasing_work') {
-            const el = document.getElementById('container-chasing_both_half');
-            if (el) el.style.display = (manualChecksState['chasing_work'] === 'Both') ? 'block' : 'none';
-        }
-    });
-
+    // Re-attach listeners (same as your original)
     modalBody.querySelectorAll('input[type="radio"]').forEach(radio => radio.addEventListener('click', handleRadioClick));
     modalBody.querySelectorAll('button[id^="details-"]').forEach(button => button.addEventListener('click', handleDetailsClick));
-
     manualCheckModal.classList.remove('hidden');
 }
         function handleRadioClick(event) {
@@ -1500,55 +1383,41 @@ case 'waterproofing_wall_deduction_check':
         }
         
         function updateChecklistButtonStatus(checkType) {
-            const items = checklistConfig[checkType];
-            const allItemsFlat = Object.values(checklistConfig).flat();
-            
-            const isComplete = items.every(item => {
-    if (item.isDisclaimer) return true;
-
+    const items = checklistConfig[checkType];
     const allItemsFlat = Object.values(checklistConfig).flat();
 
-    const parentWithShowsNext = allItemsFlat.find(p => p.showsNext === item.id);
-    const parentWithShowsNextOnValues = allItemsFlat.find(p =>
-        p.showsNextOnValues && Object.values(p.showsNextOnValues).includes(item.id)
-    );
+    const scaffoldingData = findRelevantDataByUCode('I_21.i');
+    const isScaffoldingRequired = scaffoldingData.some(row => (parseFloat(row[extractedDataKeys.cwiQtyKey]) || 0) > 0);
 
-    if (parentWithShowsNext) {
-        const triggerValue = parentWithShowsNext.showsNextOnValue || 'yes';
-        if (manualChecksState[parentWithShowsNext.id] !== triggerValue) return true;
-    }
+    const isComplete = items.every(item => {
+        if (item.isDisclaimer) return true;
 
-    if (parentWithShowsNextOnValues) {
-        const parentVal = manualChecksState[parentWithShowsNextOnValues.id];
-        const expectedChildId = parentWithShowsNextOnValues.showsNextOnValues[parentVal];
-        if (expectedChildId !== item.id) return true;
-    }
+        // Skip scaffolding check if qty is 0
+        const scaffoldingIds = ['scaffolding_type', 'scaffolding_double_floor', 'scaffolding_material', 'scaffolding_bamboo_deduction'];
+        if (scaffoldingIds.includes(item.id) && !isScaffoldingRequired) return true;
 
-    if (item.id === 'chasing_both_half' && manualChecksState['chasing_work'] !== 'Both') return true;
-    if (item.id === 'scaffolding_bamboo_deduction' && manualChecksState['scaffolding_material'] !== 'Bamboo') return true;
+        const parentWithNext = allItemsFlat.find(p => p.showsNext === item.id);
+        const parentWithNextMap = allItemsFlat.find(p => p.showsNextOnValues && Object.values(p.showsNextOnValues).includes(item.id));
 
-    return manualChecksState[item.id] !== null;
-});
-
-            let statusEl;
-            if (checkType === 'concealed') {
-                statusEl = document.getElementById('status-concealed');
-            } else if (checkType === 'electrical') {
-                statusEl = document.getElementById('status-electrical');
-            } else if (checkType === 'pm_approval') {
-                statusEl = document.getElementById('status-pm');
-            } else if (checkType === 'non_standard') {
-                statusEl = document.getElementById('status-non-standard');
-            }
-            else if (checkType === 'deductions') {
-    statusEl = document.getElementById('status-deductions');
-}
-
-            if (statusEl) {
-                statusEl.textContent = isComplete ? '✔' : '';
-                statusEl.className = isComplete ? 'text-green-400 font-bold' : 'text-gray-500';
-            }
+        if (parentWithNext && manualChecksState[parentWithNext.id] !== (parentWithNext.showsNextOnValue || 'yes')) return true;
+        if (parentWithNextMap) {
+            const parentVal = manualChecksState[parentWithNextMap.id];
+            if (parentWithNextMap.showsNextOnValues[parentVal] !== item.id) return true;
         }
+
+        if (item.id === 'chasing_both_half' && manualChecksState['chasing_work'] !== 'Both') return true;
+        if (item.id === 'scaffolding_bamboo_deduction' && manualChecksState['scaffolding_material'] !== 'Bamboo') return true;
+
+        return manualChecksState[item.id] !== null;
+    });
+
+    const statusMap = { 'concealed': 'status-concealed', 'electrical': 'status-electrical', 'pm_approval': 'status-pm', 'non_standard': 'status-non-standard', 'deductions': 'status-deductions' };
+    const statusEl = document.getElementById(statusMap[checkType]);
+    if (statusEl) {
+        statusEl.textContent = isComplete ? '✔' : '';
+        statusEl.className = isComplete ? 'text-green-400 font-bold' : 'text-gray-500';
+    }
+}
         
         function updateAllChecklistButtonStatuses() {
              updateChecklistButtonStatus('concealed');
@@ -1560,44 +1429,27 @@ case 'waterproofing_wall_deduction_check':
 
         function areManualChecksComplete() {
     const allItems = Object.values(checklistConfig).flat();
+    const scaffoldingData = findRelevantDataByUCode('I_21.i');
+    const isScafReq = scaffoldingData.some(row => (parseFloat(row[extractedDataKeys.cwiQtyKey]) || 0) > 0);
+
     for (const item of allItems) {
-        // Skip disclaimer items — they are auto-set
         if (item.isDisclaimer) continue;
+        const scafIds = ['scaffolding_type', 'scaffolding_double_floor', 'scaffolding_material', 'scaffolding_bamboo_deduction'];
+        if (scafIds.includes(item.id) && !isScafReq) continue;
 
-        // Find if this item is a conditional child of another item
-        const parentWithShowsNext = allItems.find(p => p.showsNext === item.id);
-        const parentWithShowsNextOnValues = allItems.find(p => 
-            p.showsNextOnValues && Object.values(p.showsNextOnValues).includes(item.id)
-        );
+        const p1 = allItems.find(p => p.showsNext === item.id);
+        if (p1 && manualChecksState[p1.id] !== (p1.showsNextOnValue || 'yes')) continue;
 
-        // Skip if parent uses showsNext and parent was NOT triggered
-        if (parentWithShowsNext) {
-            const triggerValue = parentWithShowsNext.showsNextOnValue || 'yes';
-            if (manualChecksState[parentWithShowsNext.id] !== triggerValue) continue;
-        }
+        const p2 = allItems.find(p => p.showsNextOnValues && Object.values(p.showsNextOnValues).includes(item.id));
+        if (p2 && p2.showsNextOnValues[manualChecksState[p2.id]] !== item.id) continue;
 
-        // Skip if parent uses showsNextOnValues and this child is not the mapped target
-        if (parentWithShowsNextOnValues) {
-            const parentVal = manualChecksState[parentWithShowsNextOnValues.id];
-            const expectedChildId = parentWithShowsNextOnValues.showsNextOnValues[parentVal];
-            if (expectedChildId !== item.id) continue;
-        }
-
-        // Special case: chasing_both_half only required if chasing_work === 'Both'
-        if (item.id === 'chasing_both_half') {
-            if (manualChecksState['chasing_work'] !== 'Both') continue;
-        }
-
-        // Special case: scaffolding_bamboo_deduction only required if scaffolding_material === 'Bamboo'
-        if (item.id === 'scaffolding_bamboo_deduction') {
-            if (manualChecksState['scaffolding_material'] !== 'Bamboo') continue;
-        }
+        if (item.id === 'chasing_both_half' && manualChecksState['chasing_work'] !== 'Both') continue;
+        if (item.id === 'scaffolding_bamboo_deduction' && manualChecksState['scaffolding_material'] !== 'Bamboo') continue;
 
         if (manualChecksState[item.id] === null) return false;
     }
     return true;
 }
-
         function getManualCheckErrors() {
     const errors = [];
     const allItems = Object.values(checklistConfig).flat();
