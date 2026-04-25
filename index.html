@@ -3,577 +3,2736 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enterprise Automation Portal</title>
+    <title>AI Excel Data Validator Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
-
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        :root {
-            /* Deep Neon-Glass Theme */
-            --bg-gradient: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
-            --card-surface: rgba(255, 255, 255, 0.05);
-            --card-border: 1px solid rgba(255, 255, 255, 0.1);
-            --card-hover-border: 1px solid rgba(139, 92, 246, 0.5);
-            --text-main: #ffffff;
-            --text-secondary: #cbd5e1;
-            --primary-glow: #8b5cf6;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-font-smoothing: antialiased;
-        }
-
         body {
             font-family: 'Inter', sans-serif;
-            background: var(--bg-gradient);
+            color: #E0E0E0;
+        }
+
+        .bg-gradient {
+            background-color: #4158D0;
+            background-image: linear-gradient(43deg, #4158D0 0%, #C850C0 46%, #FFCC70 100%);
             min-height: 100vh;
-            color: var(--text-main);
-            padding: 40px 20px;
-            overflow-x: hidden;
         }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            position: relative;
-            z-index: 2;
-        }
-
-        /* Ambient Background Orbs */
-        .orb {
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(120px);
-            z-index: 0;
-            opacity: 0.4;
-        }
-        .orb-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: #4c1d95; }
-        .orb-2 { bottom: -10%; right: -10%; width: 50vw; height: 50vw; background: #2563eb; }
-
-        /* --- Header --- */
-        .header {
-            text-align: center;
-            margin-bottom: 50px;
-        }
-
-        .header h1 {
-            font-family: 'Poppins', sans-serif;
-            font-size: 3rem;
-            font-weight: 700;
-            margin-bottom: 10px;
-            background: linear-gradient(to right, #fff, #a5b4fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .header p {
-            font-size: 1.1rem;
-            color: var(--text-secondary);
-            font-weight: 300;
-        }
-
-        /* --- Glass Cards Grid --- */
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
-            margin-bottom: 40px;
+        .table-container {
+            max-height: 400px;
+            overflow-y: auto;
         }
 
         .glass-card {
-            background: var(--card-surface);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: var(--card-border);
-            border-radius: 24px;
-            padding: 30px;
-            text-align: center;
-            transition: all 0.4s ease;
-            cursor: pointer;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .glass-card:hover {
-            transform: translateY(-8px);
-            border: var(--card-hover-border);
-            background: rgba(255, 255, 255, 0.1);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-        }
-
-        /* Icon Styling inside Cards */
-        .client-icon {
-            font-size: 48px;
-            margin-bottom: 15px;
-            filter: drop-shadow(0 0 10px rgba(255,255,255,0.3));
-        }
-
-        .glass-card h3 {
-            font-family: 'Poppins', sans-serif;
-            font-size: 1.3rem;
-            margin-bottom: 6px;
-            color: white;
-        }
-
-        .glass-card p {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            line-height: 1.5;
-        }
-
-        /* --- "As Requested" Feature Cards Section --- */
-        .hero-features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 20px;
-            margin-bottom: 50px;
-        }
-
-        .feature-box {
-            background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02));
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 16px;
-            padding: 30px 20px;
-            text-align: center;
-            backdrop-filter: blur(15px);
-            transition: transform 0.3s ease;
-        }
-
-        .feature-box:hover {
-            transform: translateY(-5px);
-            background: linear-gradient(145deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
-        }
-
-        .feature-icon-lg {
-            font-size: 3rem;
-            margin-bottom: 15px;
-            display: inline-block;
-        }
-
-        /* Icon Colors Matching Your Image */
-        .icon-lock { color: #fbbf24; text-shadow: 0 0 20px rgba(251, 191, 36, 0.4); } /* Yellow/Gold */
-        .icon-bolt { color: #f59e0b; text-shadow: 0 0 20px rgba(245, 158, 11, 0.4); } /* Orange */
-        .icon-chart { color: #a78bfa; text-shadow: 0 0 20px rgba(167, 139, 250, 0.4); } /* Purple/Color mix */
-        .icon-sync { color: #3b82f6; text-shadow: 0 0 20px rgba(59, 130, 246, 0.4); } /* Blue */
-
-        .feature-box h4 {
-            font-family: 'Poppins', sans-serif;
-            font-size: 1.1rem;
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-
-        .feature-box p {
-            font-size: 0.85rem;
-            color: #d1d5db;
-        }
-
-        /* --- Buttons --- */
-        .back-btn {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 10px 24px;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: 0.3s;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 30px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
         }
-        .back-btn:hover { background: rgba(255, 255, 255, 0.2); }
+        
+        .modal {
+            transition: opacity 0.25s ease;
+        }
 
-        .cta-btn {
-            background: linear-gradient(90deg, #8b5cf6 0%, #6366f1 100%);
+        .details-button {
+            padding: 2px 8px;
+            font-size: 12px;
+            border-radius: 6px;
+            background-color: #4f46e5;
             color: white;
             border: none;
-            padding: 12px 25px;
-            border-radius: 8px;
-            font-weight: 600;
-            width: 100%;
             cursor: pointer;
-            margin-top: 20px;
-            transition: 0.3s;
+            transition: background-color 0.2s;
         }
-        .cta-btn:hover { box-shadow: 0 0 20px rgba(139, 92, 246, 0.5); }
-
-        /* --- Page State Management --- */
-        .page-section { display: none; animation: fadeUp 0.5s ease; }
-        .page-section.active { display: block; }
-
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        .details-button:hover {
+            background-color: #4338ca;
         }
-
-        /* --- Modal --- */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(5px);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
+        .details-button:disabled {
+            background-color: #a5b4fc;
+            cursor: not-allowed;
         }
-        .modal.active { display: flex; }
-        
-        .modal-content {
-            background: #1e1b4b;
-            padding: 40px;
-            border-radius: 20px;
-            text-align: center;
-            max-width: 400px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        /* Tool Card layout fix */
-        .tool-card { align-items: flex-start; text-align: left; }
     </style>
 </head>
-<body>
 
-    <div class="orb orb-1"></div>
-    <div class="orb orb-2"></div>
+<body class="bg-gradient">
 
-    <div id="clientsPage" class="container page-section active">
-        
-        <div class="header">
-            <button class="back-btn" onclick="backToDashboard()" style="position: absolute; left: 0; top: 0;">
-                <i class="ri-dashboard-line"></i> Dashboard
-            </button>
-            <h1>Client Ecosystem</h1>
-            <p>Select a partner to access automation tools</p>
+    <div class="container mx-auto p-4 md:p-8">
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-white">AI Excel Data Validator Pro</h1>
+            <p class="text-white/80 mt-3 text-lg">Advanced validation with intelligent data analysis and comprehensive reporting.</p>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center mb-12 max-w-4xl mx-auto">
+            <div class="glass-card rounded-xl p-6">
+                <h3 class="text-2xl font-bold text-white">25+</h3>
+                <p class="text-white/70">Validation Checks</p>
+            </div>
+            <div class="glass-card rounded-xl p-6">
+                <h3 class="text-2xl font-bold text-white">100%</h3>
+                <p class="text-white/70">Local & Secure</p>
+            </div>
+            <div class="glass-card rounded-xl p-6">
+                <svg class="mx-auto h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                <p class="text-white/70 mt-2">Lightning Fast</p>
+            </div>
         </div>
 
-       
-
-        <div class="grid-container">
-
-             <div class="glass-card" onclick="openTools('ICICI')">
-                <div class="client-icon">🏢</div>
-                <h3>ICICI Bank</h3>
-                <p>Industrial Credit & Investment Corp.</p>
-            </div>
-            <div class="glass-card" onclick="openTools('HDFC')">
-                <div class="client-icon">🏛️</div>
-                <h3>HDFC Bank</h3>
-                <p>Housing Development Finance Corp.</p>
-            </div>
-            <div class="glass-card" onclick="openTools('Kotak')">
-                <div class="client-icon">🏦</div>
-                <h3>Kotak Mahindra Bank</h3>
-                <p>Kotak Mahindra Bank Limited</p>
+        <main>
+            <div id="upload-container" class="glass-card p-8 rounded-xl shadow-2xl text-center max-w-2xl mx-auto">
+                <svg class="mx-auto h-16 w-16 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                <h3 class="mt-4 text-xl font-medium text-white">Upload a file</h3>
+                <p class="mt-2 text-base text-white/70">Drag and drop or click to upload your Excel file (.xlsx, .xls).</p>
+                <div class="mt-6">
+                    <input type="file" id="file-input" class="hidden" accept=".xlsx, .xls, .xlsm">
+                    <button type="button" onclick="document.getElementById('file-input').click()" class="inline-flex items-center px-6 py-3 border border-transparent shadow-lg text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transform hover:scale-105 transition-transform duration-300">
+                        + Select File
+                    </button>
+                </div>
             </div>
 
-            
-
-            <div class="glass-card" onclick="openTools('Reliance')">
-                <div class="client-icon">🛒</div>
-                <h3>Reliance Retail</h3>
-                <p>India's Largest Retail Network</p>
+            <div id="loader" class="hidden text-center my-8">
+                <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-white mx-auto"></div>
+                <p class="mt-4 text-white text-lg">Processing your file...</p>
             </div>
 
-            <div class="glass-card" onclick="showMaintenance()">
-                <div class="client-icon">🛍️</div>
-                <h3>Shoppers Stop</h3>
-                <p>Premium Department Stores</p>
+            <div id="content-area" class="hidden mt-8">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    
+                    <div class="lg:col-span-1 glass-card p-6 rounded-xl text-gray-800">
+                        <h2 class="text-xl font-bold mb-4">File Details & Actions</h2>
+                        <p class="mb-4 text-sm"><strong>File:</strong> <span id="file-name" class="font-semibold"></span></p>
+
+                        <div id="sheet-buttons" class="mb-6 space-y-2">
+                            <h3 class="text-lg font-semibold mb-2">Sheets</h3>
+                        </div>
+
+                        <div class="space-y-4">
+                                <h4 class="font-semibold pt-2 mb-2 text-gray-600">Summary Validations</h4>
+                                <div class="space-y-2">
+                                    <button id="validate-wo-btn" class="w-full bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed shadow-md">
+                                        Summary as per WO
+                                    </button>
+                                    <button id="validate-cwi-btn" class="w-full bg-cyan-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-cyan-700 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed shadow-md">
+                                        Summary as per CWI
+                                    </button>
+                                </div>
+                                
+                                <h4 class="font-semibold pt-4 mb-0 text-gray-600">Calculations and Formula Checks</h4>
+                                <div class="space-y-2">
+                                    <button id="savings-excess-check-btn" class="w-full bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                                        Check for Savings and Excess Logic
+                                    </button>
+                                    <button id="total-check-btn" class="w-full bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                                        Check for Total = Savings + Excess
+                                    </button>
+                                    <button id="find-false-btn" class="w-full bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                                        Check for Savings + Excess = CWI - WO
+                                    </button>
+                                    <button id="variance-cwi-wo-btn" class="w-full bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                                        Check CWI vs WO Qty Variance
+                                    </button>
+                                    <button id="variance-amt-cwi-wo-btn" class="w-full bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                                            Check CWI vs WO Amt Variance
+                                    </button>
+                                    <button id="check-qty-match-btn" class="w-full bg-teal-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-teal-700 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                                            Find (WO Qty = CWI Qty) Matches
+                                    </button>
+                                </div>
+
+                                <h4 class="font-semibold pt-4 mb-0 text-gray-600">Remark check</h4>
+                                <div class="space-y-2">
+                                    <button id="work-not-in-wo-btn" class="w-full bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                                        Remarks for "Not in WO"
+                                    </button>
+                                    <button id="exceeded-wo-qty-btn" class="w-full bg-yellow-500 text-black font-bold py-2 px-4 rounded-lg hover:bg-yellow-600 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                                        Remarks for "In WO but Exceeded"
+                                    </button>
+                                </div>
+                                
+                                <h4 class="font-semibold pt-4 mb-0 text-gray-600">Variance check</h4>
+                                <div class="space-y-2">
+                                    <button id="variance-threshold-btn" class="w-full bg-orange-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-orange-600 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                                        Check for (Nos) based items exceeding 10%
+                                    </button>
+                                    <button id="running-items-variance-btn" class="w-full bg-cyan-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-cyan-700 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                                        Check for (R.ft/R.mt) based items exceeding 10%
+                                    </button>
+                                    <button id="sqft-items-variance-btn" class="w-full bg-purple-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-purple-700 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                                            Check for (Sq.ft) based items exceeding 25%
+                                    </button>
+                                </div>
+                                
+                                <h4 class="font-semibold pt-4 mb-2 text-gray-600">Manual Verification</h4>
+                                <div class="space-y-2">
+                                    <button id="check-concealed-btn" class="w-full bg-pink-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-pink-600 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed flex justify-between items-center">
+                                        <span>Check for Concealed Items</span>
+                                        <span id="status-concealed" class="text-white/80"></span>
+                                    </button>
+                                    <button id="check-electrical-btn" class="w-full bg-sky-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-sky-600 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed flex justify-between items-center">
+                                        <span>Check for Electrical Items</span>
+                                        <span id="status-electrical" class="text-white/80"></span>
+                                    </button>
+                                    <button id="check-pm-btn" class="w-full bg-pink-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-pink-600 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed flex justify-between items-center">
+                                        <span>Non-Measureable items check</span>
+                                        <span id="status-pm" class="text-white/80"></span>
+                                    </button>
+                                    <button id="check-non-standard-btn" class="w-full bg-pink-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-pink-600 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed flex justify-between items-center">
+                                        <span>Non-Standard Item Check</span>
+                                        <span id="status-non-standard" class="text-white/80"></span>
+                                    </button>
+                                    <button id="check-deductions-btn" class="w-full bg-emerald-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-emerald-600 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed flex justify-between items-center">
+    <span>Check for necessary deduction</span>
+    <span id="status-deductions" class="text-white/80"></span>
+</button>
+                                </div>
+                                
+                                <hr class="my-4 border-gray-400">
+                                
+                                <h4 class="font-semibold pt-2 mb-2 text-gray-600">Reporting</h4>
+                                <button id="download-report-btn" class="w-full bg-teal-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-teal-700 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed shadow-md">
+                                    Download Error Report (0)
+                                </button>
+
+                                <hr class="my-4 border-gray-400">
+                                <button id="debug-headers-btn" class="w-full bg-gray-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-600 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                                    Debug Headers
+                                </button>
+                        </div>
+
+                        <div id="validation-results" class="mt-6 hidden">
+                            <h3 class="text-lg font-semibold mb-2">Validation Results</h3>
+                            <div id="results-container" class="space-y-3"></div>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-2 glass-card p-6 rounded-xl text-gray-800">
+                        <h2 id="sheet-title" class="text-xl font-bold mb-4">Select a sheet to view its data</h2>
+                        <div id="data-table-container" class="table-container border rounded-lg bg-white/80">
+                            <table id="data-table" class="min-w-full divide-y divide-gray-300">
+                            </table>
+                        </div>
+                        <p id="no-data" class="text-center text-gray-500 py-10">No data to display.</p>
+                    </div>
+                </div>
             </div>
+        </main>
+    </div>
 
-            <div class="glass-card" onclick="showMaintenance()">
-                <div class="client-icon">💪</div>
-                <h3>cult.fit</h3>
-                <p>Health & Fitness Platform</p>
-            </div>
-
-            
-
-            <div class="glass-card" onclick="showMaintenance()">
-                <div class="client-icon">📈</div>
-                <h3>Nuvama Wealth</h3>
-                <p>Wealth & Investment Management</p>
-            </div>
-
-            <div class="glass-card" onclick="showMaintenance()">
-                <div class="client-icon">🛏️</div>
-                <h3>The Sleep Company</h3>
-                <p>Smart Mattress Solutions</p>
-            </div>
-
-            <div class="glass-card" onclick="showMaintenance()">
-                <div class="client-icon">🍕</div>
-                <h3>Papa John's Pizza</h3>
-                <p>International Restaurant Chain</p>
-            </div>
-
-            <div class="glass-card" onclick="showMaintenance()">
-                <div class="client-icon">☕</div>
-                <h3>Starbucks Coffee</h3>
-                <p>Global Coffeehouse Chain</p>
-            </div>
-
-            <div class="glass-card" onclick="showMaintenance()">
-                <div class="client-icon">🥪</div>
-                <h3>Subway</h3>
-                <p>Submarine Sandwich Franchise</p>
-            </div>
-
-            <div class="glass-card" onclick="showMaintenance()">
-                <div class="client-icon">📁</div>
-                <h3>Other Projects</h3>
-                <p>Miscellaneous Client Tools</p>
+    <div id="manual-check-modal" class="modal-overlay hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
+        <div class="modal-content bg-white w-full max-w-2xl rounded-xl shadow-2xl transform transition-all">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 id="modal-title" class="text-2xl font-bold text-gray-800">Checklist</h3>
+                    <button id="modal-close-btn" class="text-gray-500 hover:text-gray-800 text-3xl leading-none">&times;</button>
+                </div>
+                <div id="modal-body" class="max-h-[60vh] overflow-y-auto pr-2 space-y-3">
+                    </div>
+                <div class="mt-6 flex justify-end">
+                    <button id="modal-save-btn" class="px-6 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Save & Close
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
-    <div id="hdfcTools" class="container page-section">
-        <button class="back-btn" onclick="backToClients()"><i class="ri-arrow-left-line"></i> Back to Clients</button>
-        
-        <div class="header">
-            <h1>HDFC Automation Suite</h1>
-            <p>Secure Enterprise Tools</p>
-        </div>
-
-        <div class="hero-features">
-            <div class="feature-box">
-                <i class="ri-lock-password-fill feature-icon-lg icon-lock"></i>
-                <h4>Enterprise Security</h4>
-                <p>Bank-grade encryption and compliance</p>
+    <div id="details-modal" class="modal-overlay hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
+        <div class="modal-content bg-white w-full max-w-4xl rounded-xl shadow-2xl transform transition-all">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 id="details-modal-title" class="text-2xl font-bold text-gray-800">Relevant Item Details</h3>
+                    <button id="details-modal-close-btn" class="text-gray-500 hover:text-gray-800 text-3xl leading-none">&times;</button>
+                </div>
+                <div id="details-modal-body" class="max-h-[60vh] overflow-y-auto pr-2">
+                    </div>
             </div>
-            <div class="feature-box">
-                <i class="ri-flashlight-fill feature-icon-lg icon-bolt"></i>
-                <h4>High Performance</h4>
-                <p>Lightning-fast report processing</p>
-            </div>
-            <div class="feature-box">
-                <i class="ri-bar-chart-grouped-fill feature-icon-lg icon-chart"></i>
-                <h4>Advanced Analytics</h4>
-                <p>Detailed insights and metrics</p>
-            </div>
-            <div class="feature-box">
-                <i class="ri-refresh-line feature-icon-lg icon-sync"></i>
-                <h4>Real-time Sync</h4>
-                <p>Instant data synchronization</p>
-            </div>
-        </div>
-       
-        <div class="grid-container">
-            <div class="glass-card tool-card">
-                <i class="ri-map-pin-time-fill client-icon" style="color: #f472b6;"></i>
-                <h3>4-Visit Tracker</h3>
-                <p>Intelligent multi-visit tracking system. Consolidates visit data into structured Excel reports.</p>
-                <button class="cta-btn" onclick="showMaintenance()">Launch Tool</button>
-            
-            </div>
-            <div class="glass-card tool-card">
-                <i class="ri-file-word-2-fill client-icon" style="color: #60a5fa;"></i>
-                <h3>Word Report Automation</h3>
-                <p>Upload measurement sheets and generate professionally formatted Word reports instantly. Eliminates manual formatting errors completely.</p>
-                <button class="cta-btn" onclick="showMaintenance()">Launch Tool</button>
-          
-            </div>
-
-            <div class="glass-card tool-card">
-                <i class="ri-file-excel-2-fill client-icon" style="color: #34d399;"></i>
-                <h3>COP Generator</h3>
-                <p>Automate Certificate of Payment Generation. Transforms hours of data entry into a 2-minute automated process.</p>
-                <button class="cta-btn" onclick="showMaintenance()">Launch Tool</button>
-            
-            </div>
-
-            
         </div>
     </div>
 
-    <div id="iciciTools" class="container page-section">
-        <button class="back-btn" onclick="backToClients()"><i class="ri-arrow-left-line"></i> Back to Clients</button>
-        
-        <div class="header">
-            <h1>ICICI Automation Suite</h1>
-            <p>Industrial Credit Solutions</p>
-        </div>
-
-        <div class="hero-features">
-            <div class="feature-box"><i class="ri-lock-password-fill feature-icon-lg icon-lock"></i><h4>Enterprise Security</h4><p>Bank-grade encryption</p></div>
-            <div class="feature-box"><i class="ri-flashlight-fill feature-icon-lg icon-bolt"></i><h4>High Performance</h4><p>Fast processing</p></div>
-            <div class="feature-box"><i class="ri-bar-chart-grouped-fill feature-icon-lg icon-chart"></i><h4>Analytics</h4><p>Deep insights</p></div>
-            <div class="feature-box"><i class="ri-refresh-line feature-icon-lg icon-sync"></i><h4>Real-time Sync</h4><p>Instant updates</p></div>
-        </div>
-
-       
-
-        <div class="grid-container">
-            <div class="glass-card tool-card">
-                <i class="ri-map-pin-time-fill client-icon" style="color: #f472b6;"></i>
-                <h3>4-Visit Tracker</h3>
-                <p>Intelligent multi-visit tracking system. Consolidates visit data into structured Excel reports.</p>
-                <button class="cta-btn" onclick="window.location.href='https://icici-site-progress-report-6zlc.onrender.com/'">Launch Tool</button>
-            </div>
-            <div class="glass-card tool-card">
-                <i class="ri-file-excel-2-fill client-icon" style="color: #34d399;"></i>
-                <h3>COP Generator</h3>
-                <p>Standardized Certificate of Payment generation tool designed specifically for ICICI compliance.</p>
-                <button class="cta-btn" onclick="window.location.href='https://cop-generator.vercel.app/'">Launch Tool</button>
-            
-            </div>
-            <div class="glass-card tool-card">
-                <i class="ri-file-word-2-fill client-icon" style="color: #60a5fa;"></i>
-                <h3>Word Report Automation</h3>
-                <p>Upload measurement sheets and generate professionally formatted Word reports instantly. Eliminates manual formatting errors completely.</p>
-                <button class="cta-btn" onclick="showMaintenance()">Launch Tool</button>
-           
-            </div>
-            
-            
-        </div>
-    </div>
-    <div id="relianceTools" class="container page-section">
-    <button class="back-btn" onclick="backToClients()"><i class="ri-arrow-left-line"></i> Back to Clients</button>
-    
-    <div class="header">
-        <h1>Reliance Retail Automation Suite</h1>
-        <p>Reliance Retail Enterprise Tools</p>
-    </div>
-
-    <div class="hero-features">
-        <div class="feature-box"><i class="ri-lock-password-fill feature-icon-lg icon-lock"></i><h4>Enterprise Security</h4><p>Bank-grade encryption</p></div>
-        <div class="feature-box"><i class="ri-flashlight-fill feature-icon-lg icon-bolt"></i><h4>High Performance</h4><p>Fast processing</p></div>
-        <div class="feature-box"><i class="ri-bar-chart-grouped-fill feature-icon-lg icon-chart"></i><h4>Analytics</h4><p>Deep insights</p></div>
-        <div class="feature-box"><i class="ri-refresh-line feature-icon-lg icon-sync"></i><h4>Real-time Sync</h4><p>Instant updates</p></div>
-    </div>
-
-    <div class="grid-container">
-        <div class="glass-card tool-card">
-            <i class="ri-file-word-2-fill client-icon" style="color: #60a5fa;"></i>
-            <h3>Word Report Automation</h3>
-            <p>Upload measurement sheets and generate professionally formatted Word reports instantly.</p>
-            <button class="cta-btn" onclick="window.location.href='https://word-report-automation.onrender.com/'">Launch Tool</button>
-        </div>
-        <div class="glass-card tool-card">
-            <i class="ri-map-pin-time-fill client-icon" style="color: #f472b6;"></i>
-            <h3>4-Visit Tracker</h3>
-            <p>Intelligent multi-visit tracking system. Consolidates visit data into structured Excel reports.</p>
-            <button class="cta-btn" onclick="showMaintenance()">Launch Tool</button>
-        </div>
-        <div class="glass-card tool-card">
-            <i class="ri-file-excel-2-fill client-icon" style="color: #34d399;"></i>
-            <h3>COP Generator</h3>
-            <p>Automate Certificate of Payment generation designed specifically for Reliance compliance.</p>
-            <button class="cta-btn" onclick="showMaintenance()">Launch Tool</button>
-        </div>
-    </div>
-</div>
-
-    <div id="kotakTools" class="container page-section">
-    <button class="back-btn" onclick="backToClients()"><i class="ri-arrow-left-line"></i> Back to Clients</button>
-    
-    <div class="header">
-        <h1>Kotak Mahindra Automation Suite</h1>
-        <p>Kotak Bank Enterprise Tools</p>
-    </div>
-
-    <div class="hero-features">
-        <div class="feature-box"><i class="ri-lock-password-fill feature-icon-lg icon-lock"></i><h4>Enterprise Security</h4><p>Bank-grade encryption</p></div>
-        <div class="feature-box"><i class="ri-flashlight-fill feature-icon-lg icon-bolt"></i><h4>High Performance</h4><p>Fast processing</p></div>
-        <div class="feature-box"><i class="ri-bar-chart-grouped-fill feature-icon-lg icon-chart"></i><h4>Analytics</h4><p>Deep insights</p></div>
-        <div class="feature-box"><i class="ri-refresh-line feature-icon-lg icon-sync"></i><h4>Real-time Sync</h4><p>Instant updates</p></div>
-    </div>
-
-    <div class="grid-container">
-        <div class="glass-card tool-card">
-            <i class="ri-map-pin-time-fill client-icon" style="color: #f472b6;"></i>
-            <h3>4-Visit Tracker</h3>
-            <p>Intelligent multi-visit tracking system. Consolidates visit data into structured Excel reports.</p>
-            <button class="cta-btn" onclick="window.location.href='https://kotak-site-progress-report-nqdu.onrender.com/'">Launch Tool</button>
-        </div>
-        <div class="glass-card tool-card">
-            <i class="ri-file-word-2-fill client-icon" style="color: #60a5fa;"></i>
-            <h3>Word Report Automation</h3>
-            <p>Upload measurement sheets and generate professionally formatted Word reports instantly.</p>
-            <button class="cta-btn" onclick="showMaintenance()">Launch Tool</button>
-        </div>
-        <div class="glass-card tool-card">
-            <i class="ri-file-excel-2-fill client-icon" style="color: #34d399;"></i>
-            <h3>COP Generator</h3>
-            <p>Automate Certificate of Payment generation designed specifically for Kotak compliance.</p>
-            <button class="cta-btn" onclick="showMaintenance()">Launch Tool</button>
-        </div>
-    </div>
-</div>
-
-    <div id="maintenanceModal" class="modal">
-        <div class="modal-content">
-            <i class="ri-tools-fill" style="font-size: 50px; color: #a5b4fc; margin-bottom: 20px;"></i>
-            <h2 style="color: white; margin-bottom: 10px;">System Maintenance</h2>
-            <p style="color: #cbd5e1; margin-bottom: 25px;">This module is currently being updated. Please check back later.</p>
-            <button class="cta-btn" onclick="closeModal()">Close</button>
-        </div>
-    </div>
 
     <script>
-        // Navigation Logic
-        function backToDashboard() {
-            window.location.href = 'https://cushman-wakefield.onrender.com/index.html';
+        // --- State Management ---
+        let workbook = null;
+        let sheetNames = [];
+        let summaryData = [];
+        let extractedDataGroups = [];
+        let errorReportData = [];
+        let manualChecksState = {};
+        let currentModalCheckType = null;
+        let extractedDataJson = [];
+        let extractedDataKeys = {};
+        let detailsDataCache = {};
+
+        // --- Error Type Constants ---
+        const errorTypes = {
+            WO_SUMMARY_MISMATCH: 'Summary vs Extracted (WO) Total Mismatch',
+            CWI_SUMMARY_MISMATCH: 'Summary vs Extracted (CWI) Total Mismatch',
+            TOTAL_CALC: "'Total' Column Calculation Error",
+            SAVINGS_EXCESS_LOGIC: "'Savings'/'Excess' Logic Error",
+            SAVINGS_EXCESS_CWI_WO_MISMATCH: "'Savings + Excess = CWI - WO' Mismatch",
+            CWI_WO_VARIANCE: "'Variance (CWI vs WO)' Calculation Error",
+            CWI_WO_AMT_VARIANCE: "'Variance (Amt)' Calculation Error",
+            QTY_MATCH: "WO Qty = CWI Qty Match",
+            POSITIVE_VARIANCE_SQFT: ">25% Positive Variance (Unit: Sq.ft)",
+            WORK_NOT_IN_WO: 'Work Executed Not In WO (Missing Remark)',
+            EXCEEDED_WO_QTY: 'Exceeded WO Quantity (Missing Remark)',
+            POSITIVE_VARIANCE_NOS: '>10% Positive Variance (Unit: Nos)',
+            POSITIVE_VARIANCE_RUNNING: '>10% Positive Variance (Unit: R.ft/R.mt)',
+            BLANK_BOQ_ITEM: 'Blank BOQ Item (Zero or Empty Amount)',
+            MANUAL_CHECK_FAILED: 'Manual Verification Failed',
+        };
+
+        const checklistConfig = {
+            concealed: [
+            { 
+                id: 'dismantling_photos', 
+                text: 'Appropriate photographs of dismantling provided', 
+                type: 'cwi_qty_check', 
+                // Updated to include your specific list of dismantling-related items
+                keyword: [
+                    'dismantling', 
+                    'Existing flooring including bedding material', 
+                    'Existing Doors / Windows', 
+                    'Existing Rolling Shutter , Safety door, collapsible door etc', 
+                    'Existing Electrical fittings and fixtures', 
+                    'Miscellaneous items such as false ceilings' 
+                    
+                ] 
+            },
+                { id: 'pcc_photos', text: 'Appropriate Photos of PCC are provided for certification', type: 'cwi_qty_range_check', searchRange: { startUCode: ["I_7"], endUCode: ["I_8"] } },
+                { id: 'rcc_photos', text: 'Appropriate Photos of RCC in strong room are provided for certification', type: 'cwi_qty_check', keyword: 'strong room' },
+                { id: 'reinforcement_photos', text: 'Strong room reinforcement photographs provided', type: 'cwi_qty_check', keyword: 'reinforcement' },
+                { id: 'pop_photos', text: 'Photographs of POP Covering on floor provided', type: 'cwi_qty_check', keyword: 'covering on floor' },
+                { id: 'plumbing_photos', text: 'Photographs of Internal Concealed plumbing works provided', type: 'cwi_qty_check', keyword: 'plumbing' },
+                { id: 'core_cut_photos', text: 'Photographs of core cut in RCC slab provided', type: 'cwi_qty_check', keyword: 'core cut' },
+                { id: 'waterproofing_photos', text: 'Photographs of waterproofing and Brick Bat Coba provided', type: 'cwi_qty_check', keyword: ['brick bat coba', 'p/a waterproofing'] },
+                { id: 'ms_structure_staircase', text: 'Item V_2.a Providing, Fixing and fabrication of MS structure for staircase, under/overdeck strengthing of slab. Is MS weight certified by calculation of weight of MS', type: 'cwi_qty_check', ucode: 'V_2.a' },
+                { id: 'alum_solid_partition', text: 'Was Aluminum Framework 50 * 50 mm provided for solid partition?', type: 'cwi_qty_range_check', searchRange: { startUCode: ["III_1.a.i"], endUCode: ["III_1.a.ii"] } },
+                { id: 'alum_panelling', text: 'Was Aluminum Framework 50*38 mm provided for P/f panelling?', type: 'cwi_qty_check', ucode: 'III_1.a.v' },
+                { 
+    id: 'rmc_challan', 
+    text: 'Is RMC challan/invoice provided for RCC on site?', 
+    type: 'cwi_qty_check', 
+    keyword: 'ready mix concrete',
+    showsNext: 'rmc_shifted',
+    showsNextOnValue: 'no'
+},
+{ 
+    id: 'rmc_shifted', 
+    text: 'Is RMC qty shifted to in-situ R.C.C?', 
+    type: 'conditional_check', 
+    isConditional: true 
+},
+{ 
+    id: 'double_layer_steel', 
+    text: 'Was double layer of steel visible in photos for slab floor?', 
+    type: 'cwi_qty_check', 
+    keyword: 'floor slab with double layer of steel' 
+},
+{ 
+    id: 'chasing_work', 
+    text: 'Is chasing work considered in Civil vendor or AC vendor\'s bill?', 
+    type: 'chasing_check', 
+    keyword: 'chasing work' 
+},
+{ 
+    id: 'chasing_both_half', 
+    text: 'If both vendors claim quantity, have you provided half of the executed quantity to both?', 
+    type: 'conditional_check', 
+    isConditional: true 
+},
+{ 
+    id: 'trenching_disclaimer', 
+    text: '', 
+    type: 'trenching_disclaimer', 
+    isDisclaimer: true 
+},
+            ],
+            electrical: [
+                {
+                    id: 'cabling_sec5_exceeded',
+                    text: 'Is electrical cabling for Electrical section Part 5 exceeding WO quantity?',
+                    type: 'quantity_exceed_check',
+                    searchRange: { startUCode: ["VI_5.2.1", "5.2.1"], endUCode: ["VI_5.2.16", "5.2.16"] },
+                    showsNext: 'cabling_sec5_drawings'
+                },
+                { id: 'cabling_sec5_drawings', text: 'Check the electrical cable section part 5 carefully w.r.t. drawings', type: 'conditional_check', isConditional: true },
+                {
+                    id: 'cabling_sec6_exceeded',
+                    text: 'Is electrical cabling for Electrical section Part 6 (CCTV PAS & FAS Cables) exceeding WO quantity?',
+                    type: 'quantity_exceed_check',
+                    searchRange: { startUCode: ["VI_6.1", "6.1"], endUCode: ["VI_6.4.2", "6.4.2"] },
+                    showsNext: 'cabling_sec6_drawings'
+                },
+                { id: 'cabling_sec6_drawings', text: 'Check the electrical cable section part 6 carefully w.r.t. CCTV PAS & FAS drawings', type: 'conditional_check', isConditional: true },
+                {
+                    id: 'cabling_sec11_exceeded',
+                    text: 'Is electrical cabling for submain circuit wiring of electrical section Part 11 (Light and raw power points; AC wiring; Computer/Raw power wiring) exceeding WO quantity?',
+                    type: 'quantity_exceed_check',
+                    searchRange: { startUCode: ["VI_11.1","11.1"], endUCode: ["VI_11.3.4", "11.3.4"] },
+                    showsNext: 'cabling_sec11_breakup'
+                },
+                { id: 'cabling_sec11_breakup', text: 'Check the electrical cable section part 11 carefully w.r.t. breakup of route provided by vendor', type: 'conditional_check', isConditional: true },
+                { 
+                    id: 'raceway_photos_provided', 
+                    text: 'Photographs of raceway provided?',
+                    type: 'cwi_qty_range_check',
+                    searchRange: { startUCode: ["VI_13.1", "13.1"], endUCode: ["VI_13.6.2", "13.6.2"] }
+                },
+                { 
+                    id: 'raceway_dimensions_checked', 
+                    text: 'Raceway dimensions checked?',
+                    type: 'cwi_qty_filtered_range_check',
+                    searchRange: { startUCode: ["VI_13.1", "13.1"], endUCode: ["VI_13.6.2", "13.6.2"] },
+                    filterKeyword: 'mm'
+                },
+                { 
+                    id: 'raceway_qty_exceeded_part13', 
+                    text: 'Is raceway quantity for Electrical section Part 13 exceeding WO quantity?',
+                    type: 'quantity_exceed_check',
+                    searchRange: { startUCode: ["VI_13.1", "13.1"], endUCode: ["VI_13.6.2", "13.6.2"] },
+                    showsNext: 'raceway_layouts_checked_part13'
+                },
+                { id: 'raceway_layouts_checked_part13', text: 'Check the electrical cable section part 13 carefully w.r.t. raceway layouts', type: 'conditional_check', isConditional: true },
+                { 
+                    id: 'pvc_pipes_photos_part13', 
+                    text: 'Photographs of totally concealed underfloor rigid PVC pipes in electrical section 13 provided?',
+                    type: 'cwi_qty_check',
+                    keyword: 'totally concealed underfloor rigid PVC'
+                },
+                { 
+                    id: 'gi_tray_photos_provided', 
+                    text: 'Photographs of GI cable trays provided?',
+                    type: 'cwi_qty_check',
+                    keyword: 'G.I Cable Trays'
+                },
+                { 
+                    id: 'gi_tray_dimensions_checked', 
+                    text: 'GI cable tray dimensions checked?',
+                    type: 'cwi_qty_range_check',
+                    searchRange: { startUCode: ["VI_13.5.1", "13.5.1"], endUCode: ["VI_13.5.3", "13.5.3"] }
+                },
+                
+            ],
+            pm_approval: [
+                { id: 'pm_doc_list', text: 'I_21.k Document list, technical cut sheet approved by PM', type: 'cwi_qty_check', ucode: 'I_21.k' },
+                { id: 'pm_carpenter', text: 'III_12.p.iv Supply of carpenter on monthly basis approved by PM', type: 'cwi_qty_check', ucode: 'III_12.p.iv' },
+                { id: 'pm_electrician', text: 'VI_15.1 Retaining one electrician at site till completion of IT installation approved by PM', type: 'cwi_qty_check', ucode: 'VI_15.1' },
+                { 
+    id: 'scaffolding_type', 
+    text: 'Was scaffolding provided only for exterior work or for internal as well?', 
+    type: 'scaffolding_check', 
+    ucode: 'I_21.i',
+    isMultiOption: true,
+    options: ['Only Exterior wall', 'Only Interior wall', 'Both interior and exterior'],
+    showsNextOnValues: { 
+        'Only Interior wall': 'scaffolding_double_floor', 
+        'Both interior and exterior': 'scaffolding_double_floor' 
+    }
+},
+{ 
+    id: 'scaffolding_double_floor', 
+    text: 'Was Interior branch of double height?', 
+    type: 'conditional_check', 
+    isConditional: true 
+},
+{ 
+    id: 'scaffolding_material', 
+    text: 'Was MS or Bamboo scaffolding provided?', 
+    type: 'scaffolding_material_check', 
+    ucode: 'I_21.i',
+    isMultiOption: true,
+    options: ['MS', 'Bamboo'],
+    showsNext: 'scaffolding_bamboo_deduction',
+    showsNextOnValue: 'Bamboo'
+},
+{ 
+    id: 'scaffolding_bamboo_deduction', 
+    text: 'Was deduction carried out for bamboo scaffolding?', 
+    type: 'conditional_check', 
+    isConditional: true 
+},
+            ],
+            non_standard: [
+                { id: 'nsi_in_sheet', text: 'Any Non standard item in Measurement sheet?' },
+                { id: 'nsi_rate_validation', text: 'Is rate validation done for the non standard items done by CWI senior team member' }
+            ],
+            deductions: [
+        { 
+            id: 'deduct_brickwork', 
+            text: 'Door Deduction carried out in Brickwork?', 
+            type: 'deduction_logic_check', 
+            searchRange: { startKeyword: "Do-do as 2(a)", endKeyword: "R.C.C Works" }, 
+            filterKeywords: ["door deduction", "less door"] 
+        },
+        { 
+            id: 'deduct_plaster', 
+            text: 'Door Deduction carried out in Plaster?', 
+            type: 'deduction_logic_check', 
+            searchRange: { startKeyword: "P/A 1:4 cement plaster", endKeyword: "POP covering on Flooring" }, 
+            filterKeywords: ["door deduction", "less door"] 
+        },
+        { 
+            id: 'deduct_strong_room', 
+            text: 'Door Deduction carried out in Strong Room?', 
+            type: 'deduction_logic_check', 
+            searchRange: { startKeyword: "R.C.C Works", endKeyword: "P/A 1:4 cement plaster" }, 
+            filterKeywords: ["door deduction", "less door"] 
+        },
+        { 
+            id: 'pop_toilet', 
+            text: 'POP Covering/Bubble Sheet Deduction for Toilet area', 
+            type: 'deduction_logic_check', 
+            searchRange: { startKeyword: "POP covering on Flooring", endKeyword: "STOP_AT_END" }, 
+            filterKeywords: ["toilet area", "toilet"] 
+        },
+        { 
+            id: 'pop_locker', 
+            text: 'POP Covering/Bubble Sheet Deduction for Locker area', 
+            type: 'deduction_logic_check', 
+            searchRange: { startKeyword: "POP covering on Flooring", endKeyword: "STOP_AT_END" }, 
+            filterKeywords: ["locker area", "locker"] 
+        },
+        { 
+            id: 'pop_server', 
+            text: 'POP covering/ Bubble Sheet Deduction for Server room', 
+            type: 'deduction_logic_check', 
+            searchRange: { startKeyword: "POP covering on Flooring", endKeyword: "STOP_AT_END" }, 
+            filterKeywords: ["server room", "server"] 
+        },
+        { 
+    id: 'waterproofing_plaster_deduction', 
+    text: 'Is wall quantity claimed in waterproofing deducted from plastering quantity?', 
+    type: 'waterproofing_wall_deduction_check'
+},
+{ 
+    id: 'skirting_width_disclaimer', 
+    text: '', 
+    type: 'skirting_width_disclaimer', 
+    isDisclaimer: true 
+},
+
+    ]
+        };
+        // --- DOM Element References ---
+        const fileInput = document.getElementById('file-input');
+        const uploadContainer = document.getElementById('upload-container');
+        const contentArea = document.getElementById('content-area');
+        const loader = document.getElementById('loader');
+        const fileNameEl = document.getElementById('file-name');
+        const sheetButtonsContainer = document.getElementById('sheet-buttons');
+        const validateWoBtn = document.getElementById('validate-wo-btn');
+        const validateCwiBtn = document.getElementById('validate-cwi-btn');
+        const totalCheckBtn = document.getElementById('total-check-btn');
+        const savingsExcessCheckBtn = document.getElementById('savings-excess-check-btn');
+        const findFalseBtn = document.getElementById('find-false-btn');
+        const varianceCwiWoBtn = document.getElementById('variance-cwi-wo-btn');
+        const varianceAmtCwiWoBtn = document.getElementById('variance-amt-cwi-wo-btn');
+        const checkQtyMatchBtn = document.getElementById('check-qty-match-btn');
+        const sqftItemsVarianceBtn = document.getElementById('sqft-items-variance-btn');
+        const workNotInWoBtn = document.getElementById('work-not-in-wo-btn');
+        const exceededWoQtyBtn = document.getElementById('exceeded-wo-qty-btn');
+        const varianceThresholdBtn = document.getElementById('variance-threshold-btn');
+        const runningItemsVarianceBtn = document.getElementById('running-items-variance-btn');
+        const debugHeadersBtn = document.getElementById('debug-headers-btn');
+        const sheetTitleEl = document.getElementById('sheet-title');
+        const dataTableContainer = document.getElementById('data-table-container');
+        const dataTableEl = document.getElementById('data-table');
+        const noDataEl = document.getElementById('no-data');
+        const validationResultsEl = document.getElementById('validation-results');
+        const resultsContainer = document.getElementById('results-container');
+        const downloadReportBtn = document.getElementById('download-report-btn');
+        const checkConcealedBtn = document.getElementById('check-concealed-btn');
+        const checkPmBtn = document.getElementById('check-pm-btn');
+        const checkNonStandardBtn = document.getElementById('check-non-standard-btn');
+        const checkElectricalBtn = document.getElementById('check-electrical-btn');
+        const manualCheckModal = document.getElementById('manual-check-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalBody = document.getElementById('modal-body');
+        const modalSaveBtn = document.getElementById('modal-save-btn');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+        const detailsModal = document.getElementById('details-modal');
+        const detailsModalTitle = document.getElementById('details-modal-title');
+        const detailsModalBody = document.getElementById('details-modal-body');
+        const detailsModalCloseBtn = document.getElementById('details-modal-close-btn');
+
+
+        // --- Event Listeners ---
+        fileInput.addEventListener('change', handleFile);
+        validateWoBtn.addEventListener('click', runWoValidation);
+        validateCwiBtn.addEventListener('click', runCwiValidation);
+        totalCheckBtn.addEventListener('click', runTotalCheck);
+        savingsExcessCheckBtn.addEventListener('click', runSavingsExcessCheck);
+        findFalseBtn.addEventListener('click', runSavingsExcessCwiWoCheck);
+        varianceCwiWoBtn.addEventListener('click', runVarianceCwiWoCheck);
+        varianceAmtCwiWoBtn.addEventListener('click', runVarianceAmtCwiWoCheck); // <--- ADD THIS LINE
+        checkQtyMatchBtn.addEventListener('click', runQtyMatchCheck);
+        sqftItemsVarianceBtn.addEventListener('click', runSqftItemsVarianceCheck);
+        workNotInWoBtn.addEventListener('click', runWorkNotInWoCheck);
+        exceededWoQtyBtn.addEventListener('click', runExceededWoQtyCheck);
+        varianceThresholdBtn.addEventListener('click', runVarianceThresholdCheck);
+        runningItemsVarianceBtn.addEventListener('click', runRunningItemsVarianceCheck);
+        debugHeadersBtn.addEventListener('click', debugHeaders);
+        downloadReportBtn.addEventListener('click', generateErrorReport);
+        checkConcealedBtn.addEventListener('click', () => openModal('concealed'));
+        checkElectricalBtn.addEventListener('click', () => openModal('electrical'));
+        checkPmBtn.addEventListener('click', () => openModal('pm_approval'));
+        checkNonStandardBtn.addEventListener('click', () => openModal('non_standard'));
+        document.getElementById('check-deductions-btn').addEventListener('click', () => openModal('deductions'));
+        modalSaveBtn.addEventListener('click', saveModalChanges);
+        modalCloseBtn.addEventListener('click', closeModal);
+        detailsModalCloseBtn.addEventListener('click', () => detailsModal.classList.add('hidden'));
+
+
+        // --- Core UI Functions ---
+        async function handleFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            resetUI();
+            uploadContainer.classList.add('hidden');
+            loader.classList.remove('hidden');
+            contentArea.classList.add('hidden');
+            validationResultsEl.classList.add('hidden');
+            fileNameEl.textContent = file.name;
+
+            try {
+                const data = await file.arrayBuffer();
+                workbook = XLSX.read(data);
+                sheetNames = workbook.SheetNames;
+                
+                errorReportData = [];
+                initializeManualChecksState();
+                updateReportButtonStatus();
+
+                cacheExtractedData(); 
+
+                displaySheetButtons();
+                contentArea.classList.remove('hidden');
+
+                if (sheetNames.length > 0) {
+                    displaySheetData(sheetNames[0]);
+                    const firstButton = sheetButtonsContainer.querySelector('button');
+                    if (firstButton) firstButton.classList.add('bg-indigo-100', 'border-indigo-400', 'font-semibold');
+                }
+            } catch (error) {
+                console.error("Error processing file:", error);
+                alert("There was an error processing your file. Please try again.");
+                resetUI();
+            } finally {
+                loader.classList.add('hidden');
+            }
+        }
+        
+        function cacheExtractedData() {
+            const extractedSheet = findSheet('Extracted Data');
+            if (!extractedSheet) {
+                extractedDataJson = [];
+                extractedDataKeys = {};
+                return;
+            }
+        
+            const headers = (XLSX.utils.sheet_to_json(extractedSheet, { header: 1, defval: '' })[0] || []);
+            const requiredColumns = [
+                { keyName: 'uCodeKey', potentialNames: ['U.code', 'U Code', 'Sr.no'] },
+                { keyName: 'particularsKey', potentialNames: ['Particulars', 'Item'] },
+                { keyName: 'cwiQtyKey', potentialNames: ['As per CWI (Qty)'] },
+                { keyName: 'woQtyKey', potentialNames: ['As per WO - Qty', 'As per WO/PO (Qty)'] }
+            ];
+            
+            extractedDataKeys = checkRequiredColumns(headers, requiredColumns, false); 
+        
+            if (extractedDataKeys) {
+                extractedDataJson = XLSX.utils.sheet_to_json(extractedSheet);
+            } else {
+                extractedDataJson = [];
+                console.warn("Could not find all required columns in 'Extracted Data' for checklist validation.");
+            }
         }
 
-        function openTools(client) {
-    document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
-    
-    if (client === 'HDFC') {
-        document.getElementById('hdfcTools').classList.add('active');
-    } else if (client === 'ICICI') {
-        document.getElementById('iciciTools').classList.add('active');
-    } else if (client === 'Kotak') {
-        document.getElementById('kotakTools').classList.add('active');
-    } else if (client === 'Reliance') {
-        document.getElementById('relianceTools').classList.add('active');
+        function resetUI() {
+            uploadContainer.classList.remove('hidden');
+            contentArea.classList.add('hidden');
+            loader.classList.add('hidden');
+            fileInput.value = '';
+            workbook = null;
+            sheetNames = [];
+            summaryData = [];
+            extractedDataGroups = [];
+            errorReportData = [];
+            manualChecksState = {};
+            extractedDataJson = [];
+            extractedDataKeys = {};
+            detailsDataCache = {};
+            updateReportButtonStatus();
+            updateAllChecklistButtonStatuses();
+        }
+
+        function displaySheetButtons() {
+            sheetButtonsContainer.innerHTML = `<h3 class="text-lg font-semibold mb-2">Sheets</h3>`;
+            sheetNames.forEach(name => {
+                const button = document.createElement('button');
+                button.textContent = name;
+                button.className = 'w-full text-left px-3 py-2 border rounded-md text-sm hover:bg-indigo-50 hover:border-indigo-300 focus:outline-none focus:bg-indigo-100 focus:border-indigo-400 transition-colors border-gray-300';
+                button.onclick = (e) => {
+                    sheetButtonsContainer.querySelectorAll('button').forEach(btn => btn.classList.remove('bg-indigo-100', 'border-indigo-400', 'font-semibold'));
+                    e.target.classList.add('bg-indigo-100', 'border-indigo-400', 'font-semibold');
+                    displaySheetData(name);
+                };
+                sheetButtonsContainer.appendChild(button);
+            });
+            checkValidationReadiness();
+        }
+
+        function checkValidationReadiness() {
+            const hasFile = !!workbook;
+            const sheetNamesLower = sheetNames.map(s => s.toLowerCase().trim());
+            const hasSummary = sheetNamesLower.includes('summary sheet');
+            const hasExtracted = sheetNamesLower.includes('extracted data');
+
+            const isSummaryReady = hasSummary && hasExtracted;
+            validateWoBtn.disabled = !isSummaryReady;
+            validateCwiBtn.disabled = !isSummaryReady;
+            
+            workNotInWoBtn.disabled = !hasExtracted;
+            exceededWoQtyBtn.disabled = !hasExtracted;
+            varianceThresholdBtn.disabled = !hasExtracted;
+            runningItemsVarianceBtn.disabled = !hasExtracted;
+            totalCheckBtn.disabled = !hasExtracted;
+            savingsExcessCheckBtn.disabled = !hasExtracted;
+            findFalseBtn.disabled = !hasExtracted;
+            varianceCwiWoBtn.disabled = !hasExtracted;
+            debugHeadersBtn.disabled = !hasExtracted;
+            varianceAmtCwiWoBtn.disabled = !hasExtracted;
+            checkQtyMatchBtn.disabled = !hasExtracted;
+            sqftItemsVarianceBtn.disabled = !hasExtracted;
+
+            checkConcealedBtn.disabled = !hasFile;
+            checkPmBtn.disabled = !hasFile;
+            checkNonStandardBtn.disabled = !hasFile;
+            checkElectricalBtn.disabled = !hasFile;
+
+            const summaryTitle = isSummaryReady ? "" : "File must contain a 'Summary Sheet' and an 'Extracted Data' sheet.";
+            validateWoBtn.title = isSummaryReady ? "Compare WO totals between 'Summary Sheet' and 'Extracted Data' sheet" : summaryTitle;
+            validateCwiBtn.title = isSummaryReady ? "Compare CWI totals between 'Summary Sheet' and 'Extracted Data' sheet" : summaryTitle;
+
+            const extractedSheetTitle = "File must contain an 'Extracted Data' sheet.";
+            workNotInWoBtn.title = hasExtracted ? "Finds executed work not in the WO that is missing a remark" : extractedSheetTitle;
+            exceededWoQtyBtn.title = hasExtracted ? "Finds work where the executed quantity is greater than the WO quantity and is missing a remark" : extractedSheetTitle;
+            varianceThresholdBtn.title = hasExtracted ? "Finds items (Unit: Nos) where the quantity variance between CWI and Work Order is positive and exceeds 10%" : extractedSheetTitle;
+            runningItemsVarianceBtn.title = hasExtracted ? "Finds R.ft/R.mt items where the quantity variance between CWI and Work Order is positive and exceeds 10%" : extractedSheetTitle;
+            totalCheckBtn.title = hasExtracted ? "Check 'Total' = 'Savings' + 'Excess'" : extractedSheetTitle;
+            savingsExcessCheckBtn.title = hasExtracted ? "Validate 'Savings' and 'Excess' calculation logic" : extractedSheetTitle;
+            findFalseBtn.title = hasExtracted ? "Check if 'Savings' + 'Excess' equals the difference between 'CWI Amount' and 'WO Amount'" : extractedSheetTitle;
+            varianceCwiWoBtn.title = hasExtracted ? "Validate 'Variance (CWI vs WO)' column calculation" : extractedSheetTitle;
+            
+            debugHeadersBtn.title = hasExtracted ? "Show the exact headers the tool reads from your sheet" : extractedSheetTitle;
+            varianceAmtCwiWoBtn.title = hasExtracted ? "Validate 'Variance (Amt)' column calculation" : extractedSheetTitle;
+            checkQtyMatchBtn.title = hasExtracted ? "Find all items where WO Qty = CWI Qty (and Qty > 0)" : extractedSheetTitle;
+            sqftItemsVarianceBtn.title = hasExtracted ? "Finds Sq.ft/Sft items where the quantity variance between CWI and Work Order is positive and exceeds 25%" : extractedSheetTitle;
+        }
+
+        function displaySheetData(sheetName) {
+            sheetTitleEl.textContent = `Sheet: ${sheetName}`;
+            const sheet = workbook.Sheets[sheetName];
+            if (!sheet) return;
+
+            const jsonData = XLSX.utils.sheet_to_json(sheet, {
+                header: 1,
+                defval: ''
+            });
+            dataTableEl.innerHTML = '';
+
+            if (jsonData.length === 0) {
+                dataTableContainer.classList.add('hidden');
+                noDataEl.classList.remove('hidden');
+                return;
+            }
+
+            dataTableContainer.classList.remove('hidden');
+            noDataEl.classList.add('hidden');
+
+            const thead = document.createElement('thead');
+            thead.className = 'bg-gray-200 sticky top-0';
+            const headerRow = document.createElement('tr');
+            (jsonData[0] || []).forEach(headerText => {
+                const th = document.createElement('th');
+                th.textContent = headerText;
+                th.className = 'px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider';
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+            dataTableEl.appendChild(thead);
+
+            const tbody = document.createElement('tbody');
+            tbody.className = 'bg-white divide-y divide-gray-200';
+            jsonData.slice(1).forEach(rowData => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-50';
+                rowData.forEach(cellData => {
+                    const td = document.createElement('td');
+                    td.textContent = cellData;
+                    td.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-700';
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+            dataTableEl.appendChild(tbody);
+        }
+        
+        // --- Reporting Functions ---
+        function updateReportButtonStatus() {
+            const tempReport = [...errorReportData];
+            const manualErrors = getManualCheckErrors();
+            const finalReportData = [...tempReport, ...manualErrors];
+
+            const errorCount = finalReportData.length;
+            downloadReportBtn.disabled = errorCount === 0 && !areManualChecksComplete();
+            downloadReportBtn.textContent = `Download Error Report (${errorCount})`;
+            downloadReportBtn.title = errorCount > 0 || areManualChecksComplete()
+                ? `Click to download a report with ${errorCount} detected issue(s).`
+                : "No errors detected. Run checks and complete manual verification first.";
+        }
+
+        function updateErrorReport(newErrors, errorType, formatter) {
+            errorReportData = errorReportData.filter(error => error.type !== errorType);
+
+            if (newErrors && newErrors.length > 0) {
+                const formattedErrors = newErrors.map(error => formatter(error, errorType));
+                errorReportData.push(...formattedErrors);
+            }
+            updateReportButtonStatus();
+        }
+        
+        // REPLACE your old generateErrorReport function with this final version
+
+async function generateErrorReport() {
+    if (!areManualChecksComplete()) {
+        alert("Please complete all manual verification checklists before downloading the report.");
+        return;
     }
-    window.scrollTo(0,0);
+
+    // First, ensure the manual check errors are correctly collated
+    updateErrorReport([], errorTypes.MANUAL_CHECK_FAILED, () => {}); // Clear old manual errors
+    const manualErrors = getManualCheckErrors();
+    updateErrorReport(manualErrors, errorTypes.MANUAL_CHECK_FAILED, (error, type) => ({
+        particulars: error.text,
+        type: type,
+        correction: 'This item was marked as "No". Please provide the required documentation/photographs or justification.'
+    }));
+
+    if (errorReportData.length === 0) {
+        alert("No errors have been detected to generate a report.");
+        return;
+    }
+
+    // 1. Group errors by their type
+    const groupedErrors = errorReportData.reduce((acc, error) => {
+        const type = error.type || 'Uncategorized';
+        if (!acc[type]) {
+            acc[type] = [];
+        }
+        acc[type].push(error);
+        return acc;
+    }, {});
+
+    // --- ExcelJS Implementation ---
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Error Report');
+
+    // Define styles
+    const headerStyle = {
+        font: { name: 'Calibri', size: 14, bold: true, color: { argb: 'FFFFFFFF' } },
+        fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4F81BD' } }, // Blue background
+        alignment: { vertical: 'middle', horizontal: 'center' }
+    };
+    
+    const subHeaderStyle = {
+        font: { name: 'Calibri', size: 11, bold: true },
+        fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD9E1F2' } }, // Light blue background
+        border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
+    };
+
+    const cellStyle = {
+        alignment: { vertical: 'top', wrapText: true },
+        border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
+    };
+    
+    const totalRowStyle = {
+        font: { bold: true },
+        border: { top: { style: 'double' } }
+    };
+
+    // Set column widths
+    worksheet.columns = [
+        { key: 'sr', width: 8 },
+        { key: 'particulars', width: 70 },
+        { key: 'correction', width: 70 }
+    ];
+
+    let currentRowIndex = 1;
+
+    // 2. Build the styled report for each group
+    for (const errorType in groupedErrors) {
+        const errors = groupedErrors[errorType];
+
+        // Add two blank rows for spacing
+        if (currentRowIndex > 1) {
+            worksheet.addRow([]);
+            worksheet.addRow([]);
+            currentRowIndex += 2;
+        }
+
+        // Add the main styled header for the group
+        const mainHeaderRow = worksheet.addRow([errorType.toUpperCase()]);
+        mainHeaderRow.eachCell(cell => {
+            cell.style = headerStyle;
+        });
+        worksheet.mergeCells(`A${currentRowIndex}:C${currentRowIndex}`);
+        mainHeaderRow.height = 25;
+        currentRowIndex++;
+
+        // Add the column sub-headers
+        const subHeaderRow = worksheet.addRow(['Sr. No', 'Particulars with U.Code', 'Correction Required']);
+        subHeaderRow.eachCell(cell => {
+            cell.style = subHeaderStyle;
+        });
+        currentRowIndex++;
+        
+        // Add data rows for each error
+        errors.forEach((error, index) => {
+            const dataRow = worksheet.addRow([
+                index + 1,
+                error.particulars,
+                error.correction
+            ]);
+            dataRow.eachCell({ includeEmpty: true }, (cell) => {
+                cell.style = cellStyle;
+            });
+            
+            // Auto-adjust row height based on content length
+            const particularsText = error.particulars || '';
+            const correctionText = error.correction || '';
+            const charsPerLine = 60; // A conservative estimate for characters per line
+            const heightPerLine = 16; // A bit of extra padding
+
+            const particularsLineCount = Math.ceil(particularsText.length / charsPerLine);
+            const correctionLineCount = Math.ceil(correctionText.length / charsPerLine);
+            
+            // Use the HIGHEST line count from either column to determine row height
+            const maxLineCount = Math.max(particularsLineCount, correctionLineCount, 1);
+            
+            dataRow.height = maxLineCount * heightPerLine;
+            currentRowIndex++;
+        });
+
+        // Add the total row for the group
+        const totalRow = worksheet.addRow([`TOTAL ERRORS:`, '', errors.length]);
+        worksheet.mergeCells(`A${currentRowIndex}:B${currentRowIndex}`);
+        
+        const totalLabelCell = worksheet.getCell(`A${currentRowIndex}`);
+        totalLabelCell.style = { font: { bold: true }, alignment: { horizontal: 'right' }, border: { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' }} };
+
+        const totalValueCell = worksheet.getCell(`C${currentRowIndex}`);
+        totalValueCell.style = { font: { bold: true }, border: { top: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' }} };
+
+        currentRowIndex++;
+    }
+
+    // 3. Generate and download the file
+    workbook.xlsx.writeBuffer().then(buffer => {
+        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        saveAs(blob, `Validation_Error_Report_${new Date().toISOString().slice(0,10)}.xlsx`);
+    });
+}
+        // --- Manual Check Functions ---
+        function initializeManualChecksState() {
+            manualChecksState = {};
+            Object.values(checklistConfig).flat().forEach(item => {
+                manualChecksState[item.id] = null;
+            });
+            updateAllChecklistButtonStatuses();
+        }
+
+        function findRelevantData(keywordOrKeywords) {
+            if (!keywordOrKeywords || extractedDataJson.length === 0 || !extractedDataKeys || !extractedDataKeys.particularsKey) {
+                return [];
+            }
+            const { particularsKey } = extractedDataKeys;
+            return extractedDataJson.filter(row => {
+                const particulars = (row[particularsKey] || '').toString().toLowerCase();
+                if (Array.isArray(keywordOrKeywords)) {
+                    return keywordOrKeywords.some(k => particulars.includes(k.toLowerCase()));
+                } else {
+                    return particulars.includes(keywordOrKeywords.toLowerCase());
+                }
+            });
+        }
+
+        function findRelevantDataByUCode(ucodeToFind) {
+            if (!ucodeToFind || extractedDataJson.length === 0 || !extractedDataKeys || !extractedDataKeys.uCodeKey) {
+                return [];
+            }
+            const { uCodeKey } = extractedDataKeys;
+            const normalizedUCodeToFind = ucodeToFind.toLowerCase().replace(/\s/g, '');
+            return extractedDataJson.filter(row => {
+                const ucodeInRow = (row[uCodeKey] || '').toString().toLowerCase().replace(/\s/g, '');
+                return ucodeInRow.startsWith(normalizedUCodeToFind);
+            });
+        }
+        
+        function openModal(checkType) {
+    currentModalCheckType = checkType;
+    detailsDataCache = {};
+    let titleText = '';
+    
+    switch (checkType) {
+        case 'concealed': titleText = 'Check for Concealed Items'; break;
+        case 'electrical': titleText = 'Check for Electrical Items'; break;
+        case 'pm_approval': titleText = 'Non-Measureable items check'; break;
+        case 'non_standard': titleText = 'Non-Standard Item Check'; break;
+        case 'deductions': titleText = 'Check for necessary deduction'; break;
+    }
+    modalTitle.textContent = titleText;
+    modalBody.innerHTML = '';
+    const items = checklistConfig[checkType];
+
+    // Determine if scaffolding is required globally for this check
+    const scaffoldingData = findRelevantDataByUCode('I_21.i');
+    const isScaffoldingRequired = scaffoldingData.some(row => (parseFloat(row[extractedDataKeys.cwiQtyKey]) || 0) > 0);
+
+    items.forEach(item => {
+        let detailsButtonHtml = '';
+        let dataCheckStatus = 'NA';
+        
+        // --- SCAFFOLDING FILTERING ---
+        const scaffoldingIds = ['scaffolding_type', 'scaffolding_double_floor', 'scaffolding_material', 'scaffolding_bamboo_deduction'];
+        if (scaffoldingIds.includes(item.id) && !isScaffoldingRequired) {
+            manualChecksState[item.id] = 'na'; // Mark as NA in state so validation passes
+            return; // Skip rendering
+        }
+
+        // --- DATA ANALYSIS LOGIC ---
+        if (item.type === 'deduction_logic_check') {
+            const analysis = analyzeDeductionsInMeasurement(item);
+            dataCheckStatus = analysis.status;
+            detailsDataCache[item.id] = analysis;
+            detailsButtonHtml = `<button id="details-${item.id}" class="details-button">Details</button>`;
+        } else if (item.type === 'quantity_exceed_check') {
+            const analysis = analyzeSearchRange(item.searchRange);
+            dataCheckStatus = analysis.status;
+            detailsDataCache[item.id] = analysis;
+            detailsButtonHtml = `<button id="details-${item.id}" class="details-button" ${dataCheckStatus.includes('NOT_FOUND') ? 'disabled' : ''}>Details</button>`;
+        } else if (item.type === 'cwi_qty_range_check' || item.type === 'cwi_qty_filtered_range_check') {
+            const filter = item.type === 'cwi_qty_filtered_range_check' ? item.filterKeyword : null;
+            const analysis = analyzeCwiQtyInRange(item.searchRange, filter);
+            dataCheckStatus = analysis.status;
+            detailsDataCache[item.id] = analysis;
+            detailsButtonHtml = `<button id="details-${item.id}" class="details-button" ${dataCheckStatus !== 'DATA_WITH_POSITIVE_QTY' ? 'disabled' : ''}>Details</button>`;
+        } else if (item.type === 'trenching_disclaimer' || item.type === 'skirting_width_disclaimer') {
+            const analysis = item.type === 'trenching_disclaimer' ? analyzeTrenchingDisclaimer() : analyzeSkirtingWidthDisclaimer();
+            detailsDataCache[item.id] = analysis;
+            if (analysis.show) {
+                modalBody.insertAdjacentHTML('beforeend', `<div class="border-2 border-red-500 rounded-md p-4 bg-red-50 mb-3"><p class="font-bold text-red-700 text-base">⚠️ DISCLAIMER: ${analysis.message}</p></div>`);
+                manualChecksState[item.id] = 'no';
+            } else { manualChecksState[item.id] = 'na'; }
+            return;
+        } else if (item.type === 'waterproofing_wall_deduction_check') {
+            const analysis = analyzeWaterproofingWallDeduction();
+            dataCheckStatus = analysis.status;
+            detailsDataCache[item.id] = analysis;
+            detailsButtonHtml = `<button id="details-${item.id}" class="details-button" ${analysis.data.length === 0 ? 'disabled' : ''}>Details</button>`;
+        } else if (item.type === 'chasing_check') {
+            const analysis = analyzeChasingWork();
+            dataCheckStatus = analysis.status;
+            detailsDataCache[item.id] = analysis;
+            detailsButtonHtml = `<button id="details-${item.id}" class="details-button" ${analysis.qty === 0 ? 'disabled' : ''}>Details</button>`;
+        } else if (item.ucode && (item.type === 'scaffolding_check' || item.type === 'scaffolding_material_check')) {
+            const relevantData = findRelevantDataByUCode(item.ucode);
+            detailsDataCache[item.id] = { data: relevantData };
+            dataCheckStatus = 'DATA_WITH_POSITIVE_QTY';
+            detailsButtonHtml = `<button id="details-${item.id}" class="details-button">Details</button>`;
+        } else if (item.type === 'cwi_qty_check' || item.type === 'simple_check') {
+            let relevantData = item.ucode ? findRelevantDataByUCode(item.ucode) : findRelevantData(item.keyword);
+            detailsDataCache[item.id] = { data: relevantData };
+            dataCheckStatus = relevantData.length > 0 ? (relevantData.some(row => parseFloat(row[extractedDataKeys.cwiQtyKey]) > 0) ? 'DATA_WITH_POSITIVE_QTY' : 'DATA_WITH_ZERO_QTY') : 'NO_DATA';
+            if (!['rmc_shifted', 'chasing_both_half'].includes(item.id)) {
+                detailsButtonHtml = `<button id="details-${item.id}" class="details-button" ${dataCheckStatus !== 'DATA_WITH_POSITIVE_QTY' ? 'disabled' : ''}>Details</button>`;
+            }
+        }
+
+        // UI Generation
+        const isDeduction = currentModalCheckType === 'deductions';
+        const currentState = manualChecksState[item.id];
+        const isMulti = (item.isMultiOption && item.options) || item.type === 'chasing_check';
+        
+        let radioButtonsHtml = '';
+        if (isMulti) {
+            const opts = item.options || ['Civil vendors bill', 'HVAC vendors bill', 'Both'];
+            opts.forEach(opt => {
+                radioButtonsHtml += `<label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="${item.id}" value="${opt}" data-check-status="${dataCheckStatus}" class="form-radio text-indigo-600" ${currentState === opt ? 'checked' : ''}><span class="text-gray-700 font-semibold">${opt}</span></label>`;
+            });
+        } else {
+            const hideNA = ['rmc_challan', 'rmc_shifted', 'chasing_both_half', 'scaffolding_double_floor', 'scaffolding_bamboo_deduction'].includes(item.id);
+            radioButtonsHtml = `<label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="${item.id}" value="yes" data-check-status="${dataCheckStatus}" class="form-radio text-green-600" ${currentState === 'yes' ? 'checked' : ''}><span class="text-green-700 font-semibold">Yes</span></label>
+                                <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="${item.id}" value="no" data-check-status="${dataCheckStatus}" class="form-radio text-red-600" ${currentState === 'no' ? 'checked' : ''}><span class="text-red-700 font-semibold">${isDeduction ? 'Missed' : 'No'}</span></label>
+                                ${hideNA ? '' : `<label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="${item.id}" value="na" data-check-status="${dataCheckStatus}" class="form-radio text-gray-500" ${currentState === 'na' ? 'checked' : ''}><span class="text-gray-600 font-semibold">${isDeduction ? 'Not Required' : 'N/A'}</span></label>`}`;
+        }
+
+        modalBody.insertAdjacentHTML('beforeend', `<div id="container-${item.id}" class="border rounded-md p-3 bg-gray-50 mb-3" ${item.isConditional ? 'style="display: none;"' : ''}><div class="flex justify-between items-center mb-2"><label class="block text-gray-700 font-medium">${item.text}</label>${detailsButtonHtml}</div><div class="flex items-center space-x-6 flex-wrap gap-y-2">${radioButtonsHtml}</div></div>`);
+    });
+
+    // Re-attach listeners (same as your original)
+    modalBody.querySelectorAll('input[type="radio"]').forEach(radio => radio.addEventListener('click', handleRadioClick));
+    modalBody.querySelectorAll('button[id^="details-"]').forEach(button => button.addEventListener('click', handleDetailsClick));
+    manualCheckModal.classList.remove('hidden');
+}
+        function handleRadioClick(event) {
+            const radio = event.target;
+            const selection = radio.value;
+            const itemId = radio.name;
+            const checkStatus = radio.dataset.checkStatus;
+            
+            const itemConfig = Object.values(checklistConfig).flat().find(i => i.id === itemId);
+            if (!itemConfig) return;
+
+            const revertSelection = () => {
+                event.preventDefault();
+                const originalSelection = manualChecksState[itemId];
+                document.querySelectorAll(`input[name="${itemId}"]`).forEach(r => r.checked = (r.value === originalSelection));
+            };
+
+            // --- Logic based on Check Type ---
+            switch (itemConfig.type) {
+                case 'quantity_exceed_check':
+    if (checkStatus === 'EXCEEDED') {
+        if (selection === 'no' || selection === 'na') {
+            alert("Work order quantity is exceeded. You must select 'Yes'.");
+            revertSelection(); return;
+        }
+    } else if (checkStatus === 'NOT_EXCEEDED') {
+        if (selection === 'yes' || selection === 'na') {
+            alert("No work order exceedance was found. Please select 'No'.");
+            revertSelection(); return;
+        }
+    } else if (checkStatus === 'ALL_ZERO' && selection !== 'na') {
+        alert("No work was planned or billed for this section. Please select N/A.");
+        revertSelection(); return;
+    } else if (checkStatus === 'NOT_FOUND' && selection !== 'na') {
+        alert("The specified item range was not found. Please select N/A.");
+        revertSelection(); return;
+    }
+    break;
+
+  case 'cwi_qty_check':
+case 'cwi_qty_range_check':
+case 'cwi_qty_filtered_range_check':
+    const yesNoOnlyItems = ['rmc_shifted', 'chasing_both_half', 'scaffolding_double_floor', 'scaffolding_bamboo_deduction'];
+    if (yesNoOnlyItems.includes(itemId)) {
+        break;
+    }
+    if (itemId === 'rmc_challan') {
+        if (checkStatus === 'DATA_WITH_POSITIVE_QTY' && selection === 'no') {
+            alert("RCC quantity is present. Details button is active. You must select 'Yes'.");
+            revertSelection(); return;
+        }
+        if (checkStatus !== 'DATA_WITH_POSITIVE_QTY' && selection === 'yes') {
+            alert("No RCC quantity found. Details button is blurred. You must select 'No'.");
+            revertSelection(); return;
+        }
+        break;
+    }
+    if (checkStatus === 'NO_DATA' && selection !== 'na') {
+        alert("No particulars found in the measurement sheet. Please select N/A.");
+        revertSelection(); return;
+    } else if (checkStatus === 'DATA_WITH_ZERO_QTY' && itemId !== 'rmc_challan' && (selection === 'yes' || selection === 'no')) {
+    alert("CWI quantity is zero for this item. Please select N/A.");
+    revertSelection(); return;
+} else if (checkStatus === 'DATA_WITH_POSITIVE_QTY') {
+        if (selection === 'na') {
+            alert("Particulars were found with a quantity > 0. Please select either 'Yes' or 'No'.");
+            revertSelection(); return;
+        } else if (itemId === 'rmc_challan') {
+    if (checkStatus === 'DATA_WITH_POSITIVE_QTY' && selection === 'no') {
+        alert("RCC quantity is present in the measurement sheet. You must select 'Yes'.");
+        revertSelection(); return;
+    } else if (checkStatus !== 'DATA_WITH_POSITIVE_QTY' && selection === 'yes') {
+        alert("No RCC quantity found in the measurement sheet. You must select 'No'.");
+        revertSelection(); return;
+    }
+}
+else if (selection === 'no' && !confirm("Data exists for this item with a CWI quantity > 0. Are you sure you want to proceed with 'No'?")) {
+    revertSelection(); return;
+}
+    }
+    break;
+
+                case 'conditional_check':
+                    if (selection === 'na') {
+                        alert("This follow-up check is required. Please select Yes or No.");
+                        revertSelection(); return;
+                    }
+                    break;
+                case 'deduction_logic_check':
+    if (checkStatus === 'QTY_FOUND') {
+        if (selection === 'no' || selection === 'na') {
+            alert("Quantity was found for this deduction. You cannot select 'Missed out' or 'Not required' if data is present. Please select 'Yes'.");
+            revertSelection(); return;
+        }
+    } else if (checkStatus === 'QTY_NOT_FOUND') {
+        if (selection === 'yes') {
+            alert("Deduction quantity is not present in the measurement sheet. You cannot select 'Yes'. Please select 'Deduction Missed out' or 'Deduction Not required'.");
+            revertSelection(); return;
+        }
+    }
+    break;
+    case 'chasing_check':
+    if (selection === 'Both') {
+        // Show the conditional "half quantity" question
+        const childContainer = document.getElementById('container-chasing_both_half');
+        if (childContainer) childContainer.style.display = 'block';
+    } else {
+        const childContainer = document.getElementById('container-chasing_both_half');
+        if (childContainer) childContainer.style.display = 'none';
+        manualChecksState['chasing_both_half'] = null;
+    }
+    break;
+
+case 'scaffolding_check':
+    // Handle showsNextOnValues
+    if (itemConfig.showsNextOnValues) {
+        Object.values(itemConfig.showsNextOnValues).forEach(targetId => {
+            const el = document.getElementById(`container-${targetId}`);
+            if (el) el.style.display = 'none';
+        });
+        const nextId = itemConfig.showsNextOnValues[selection];
+        if (nextId) {
+            const el = document.getElementById(`container-${nextId}`);
+            if (el) el.style.display = 'block';
+        }
+    }
+    break;
+
+case 'scaffolding_material_check':
+    if (itemConfig.showsNext && itemConfig.showsNextOnValue) {
+        const el = document.getElementById(`container-${itemConfig.showsNext}`);
+        if (el) el.style.display = (selection === itemConfig.showsNextOnValue) ? 'block' : 'none';
+        if (selection !== itemConfig.showsNextOnValue) {
+            manualChecksState[itemConfig.showsNext] = null;
+        }
+    }
+    break;
+
+case 'waterproofing_wall_deduction_check':
+    if (dataCheckStatus === 'QTY_FOUND' && selection === 'na') {
+        alert("Wall quantity was found in the waterproofing section. Please select Yes or No.");
+        revertSelection(); return;
+    } else if (dataCheckStatus === 'QTY_NOT_FOUND' && selection === 'yes') {
+        alert("No wall quantity found in the waterproofing section. Please select No or N/A.");
+        revertSelection(); return;
+    }
+    break;
+            }
+
+            // Update conditional visibility for electrical checks
+            if (itemConfig.showsNext) {
+    const childContainer = document.getElementById(`container-${itemConfig.showsNext}`);
+    if (childContainer) {
+        const triggerValue = itemConfig.showsNextOnValue || 'yes';
+        childContainer.style.display = (selection === triggerValue) ? 'block' : 'none';
+        if (selection !== triggerValue) {
+            manualChecksState[itemConfig.showsNext] = null;
+            document.querySelectorAll(`input[name="${itemConfig.showsNext}"]`).forEach(r => r.checked = false);
+        }
+    }
+}
+        }
+
+        function handleDetailsClick(event) {
+            const itemId = event.target.id.replace('details-', '');
+            const cacheEntry = detailsDataCache[itemId];
+            if (cacheEntry && cacheEntry.data && cacheEntry.data.length > 0) {
+                showDetailsModal(cacheEntry.data, false, currentModalCheckType, itemId);
+            } else {
+                showDetailsModal([], true, currentModalCheckType, itemId);
+            }
+        }
+
+        function showDetailsModal(data, noDataFound = false, checkType = null, itemId = null) {
+    let itemConfig = null;
+    if (itemId && checklistConfig[checkType]) {
+        itemConfig = checklistConfig[checkType].find(item => item.id === itemId);
+    }
+
+    // --- 1. HANDLE DEDUCTION LOGIC WARNING (BOLD RED MESSAGE) ---
+    // This triggers if no rows matching "Less door" etc. were found in the Measurement Sheet
+    if (itemConfig && itemConfig.type === 'deduction_logic_check' && (noDataFound || !data || data.length === 0)) {
+        detailsModalBody.innerHTML = `
+            <div class="p-10 text-center">
+                <p class="text-2xl font-bold text-red-600 uppercase tracking-wide">
+                    Less door or door deduction qty is not present.
+                </p>
+                <p class="text-lg font-semibold text-gray-800 mt-4">
+                    Please recheck your measurement sheet or contact your AI expert.
+                </p>
+            </div>`;
+        detailsModal.classList.remove('hidden');
+        return;
+    }
+
+    // --- 2. HANDLE STANDARD NO DATA FOUND ---
+    if (noDataFound || !data || data.length === 0) {
+        detailsModalBody.innerHTML = `<p class="text-gray-700 text-center p-8">No corresponding particulars were found for this item.</p>`;
+        detailsModal.classList.remove('hidden');
+        return;
+    }
+
+    let tableHtml = '';
+
+    // --- 3. RENDER TABLE FOR QUANTITY EXCEED CHECK (Requires WO vs CWI) ---
+    if (itemConfig && itemConfig.type === 'quantity_exceed_check') {
+        const { uCodeKey, particularsKey, woQtyKey, cwiQtyKey } = extractedDataKeys;
+        
+        if (!uCodeKey || !particularsKey || !woQtyKey || !cwiQtyKey) {
+            detailsModalBody.innerHTML = `<p class="text-red-600 p-4">Required columns (U.code, Particulars, WO Qty, As per CWI Qty) not found.</p>`;
+            detailsModal.classList.remove('hidden');
+            return;
+        }
+
+        tableHtml = `<table class="min-w-full divide-y divide-gray-300 text-gray-800">
+            <thead class="bg-gray-200">
+                <tr>
+                    <th class="px-4 py-2 text-left text-xs font-bold text-gray-600 uppercase">U.Code/Sr.No</th>
+                    <th class="px-4 py-2 text-left text-xs font-bold text-gray-600 uppercase">Particulars</th>
+                    <th class="px-4 py-2 text-left text-xs font-bold text-gray-600 uppercase">As per WO - Qty</th>
+                    <th class="px-4 py-2 text-left text-xs font-bold text-gray-600 uppercase">As per CWI (Qty)</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">`;
+
+        data.forEach(row => {
+            tableHtml += `
+                <tr>
+                    <td class="px-4 py-2 whitespace-nowrap text-sm">${row[uCodeKey] || 'N/A'}</td>
+                    <td class="px-4 py-2 text-sm">${row[particularsKey] || ''}</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-sm text-right">${row[woQtyKey] || 0}</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-sm text-right font-semibold text-red-600">${row[cwiQtyKey] || 0}</td>
+                </tr>`;
+        });
+        tableHtml += `</tbody></table>`;
+
+    
+
+    // --- 4. RENDER TABLE FOR ALL OTHER CHECKS (CWI Quantity View) ---
+    } else {
+        const { uCodeKey, particularsKey, cwiQtyKey } = extractedDataKeys;
+        if (!uCodeKey || !particularsKey || !cwiQtyKey) {
+            detailsModalBody.innerHTML = `<p class="text-red-600 p-4">Required columns (U.code, Particulars, As per CWI (Qty)) not found.</p>`;
+            detailsModal.classList.remove('hidden');
+            return;
+        }
+
+        tableHtml = `<table class="min-w-full divide-y divide-gray-300 text-gray-800">
+            <thead class="bg-gray-200">
+                <tr>
+                    <th class="px-4 py-2 text-left text-xs font-bold text-gray-600 uppercase">U.Code/Sr.No</th>
+                    <th class="px-4 py-2 text-left text-xs font-bold text-gray-600 uppercase">Particulars</th>
+                    <th class="px-4 py-2 text-left text-xs font-bold text-gray-600 uppercase">As per CWI (Qty)</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">`;
+
+        data.forEach(row => {
+            tableHtml += `
+                <tr>
+                    <td class="px-4 py-2 whitespace-nowrap text-sm">${row[uCodeKey] || 'N/A'}</td>
+                    <td class="px-4 py-2 text-sm">${row[particularsKey] || ''}</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-sm text-right font-medium">${row[cwiQtyKey] || 0}</td>
+                </tr>`;
+        });
+        tableHtml += `</tbody></table>`;
+    }
+
+    detailsModalBody.innerHTML = tableHtml;
+    detailsModal.classList.remove('hidden');
+}
+        function closeModal() {
+            manualCheckModal.classList.add('hidden');
+            currentModalCheckType = null;
+        }
+
+        function saveModalChanges() {
+            if (!currentModalCheckType) return;
+            const items = checklistConfig[currentModalCheckType];
+            items.forEach(item => {
+                const selected = document.querySelector(`input[name="${item.id}"]:checked`);
+                manualChecksState[item.id] = selected ? selected.value : null;
+            });
+            updateChecklistButtonStatus(currentModalCheckType);
+            updateReportButtonStatus();
+            closeModal();
+        }
+        
+        function updateChecklistButtonStatus(checkType) {
+    const items = checklistConfig[checkType];
+    const allItemsFlat = Object.values(checklistConfig).flat();
+
+    const scaffoldingData = findRelevantDataByUCode('I_21.i');
+    const isScaffoldingRequired = scaffoldingData.some(row => (parseFloat(row[extractedDataKeys.cwiQtyKey]) || 0) > 0);
+
+    const isComplete = items.every(item => {
+        if (item.isDisclaimer) return true;
+
+        // Skip scaffolding check if qty is 0
+        const scaffoldingIds = ['scaffolding_type', 'scaffolding_double_floor', 'scaffolding_material', 'scaffolding_bamboo_deduction'];
+        if (scaffoldingIds.includes(item.id) && !isScaffoldingRequired) return true;
+
+        const parentWithNext = allItemsFlat.find(p => p.showsNext === item.id);
+        const parentWithNextMap = allItemsFlat.find(p => p.showsNextOnValues && Object.values(p.showsNextOnValues).includes(item.id));
+
+        if (parentWithNext && manualChecksState[parentWithNext.id] !== (parentWithNext.showsNextOnValue || 'yes')) return true;
+        if (parentWithNextMap) {
+            const parentVal = manualChecksState[parentWithNextMap.id];
+            if (parentWithNextMap.showsNextOnValues[parentVal] !== item.id) return true;
+        }
+
+        if (item.id === 'chasing_both_half' && manualChecksState['chasing_work'] !== 'Both') return true;
+        if (item.id === 'scaffolding_bamboo_deduction' && manualChecksState['scaffolding_material'] !== 'Bamboo') return true;
+
+        return manualChecksState[item.id] !== null;
+    });
+
+    const statusMap = { 'concealed': 'status-concealed', 'electrical': 'status-electrical', 'pm_approval': 'status-pm', 'non_standard': 'status-non-standard', 'deductions': 'status-deductions' };
+    const statusEl = document.getElementById(statusMap[checkType]);
+    if (statusEl) {
+        statusEl.textContent = isComplete ? '✔' : '';
+        statusEl.className = isComplete ? 'text-green-400 font-bold' : 'text-gray-500';
+    }
+}
+        
+        function updateAllChecklistButtonStatuses() {
+             updateChecklistButtonStatus('concealed');
+             updateChecklistButtonStatus('electrical');
+             updateChecklistButtonStatus('pm_approval');
+             updateChecklistButtonStatus('non_standard');
+             updateChecklistButtonStatus('deductions');
+        }
+
+        function areManualChecksComplete() {
+    const allItems = Object.values(checklistConfig).flat();
+    const scaffoldingData = findRelevantDataByUCode('I_21.i');
+    const isScafReq = scaffoldingData.some(row => (parseFloat(row[extractedDataKeys.cwiQtyKey]) || 0) > 0);
+
+    for (const item of allItems) {
+        if (item.isDisclaimer) continue;
+        const scafIds = ['scaffolding_type', 'scaffolding_double_floor', 'scaffolding_material', 'scaffolding_bamboo_deduction'];
+        if (scafIds.includes(item.id) && !isScafReq) continue;
+
+        const p1 = allItems.find(p => p.showsNext === item.id);
+        if (p1 && manualChecksState[p1.id] !== (p1.showsNextOnValue || 'yes')) continue;
+
+        const p2 = allItems.find(p => p.showsNextOnValues && Object.values(p.showsNextOnValues).includes(item.id));
+        if (p2 && p2.showsNextOnValues[manualChecksState[p2.id]] !== item.id) continue;
+
+        if (item.id === 'chasing_both_half' && manualChecksState['chasing_work'] !== 'Both') continue;
+        if (item.id === 'scaffolding_bamboo_deduction' && manualChecksState['scaffolding_material'] !== 'Bamboo') continue;
+
+        if (manualChecksState[item.id] === null) return false;
+    }
+    return true;
+}
+        function getManualCheckErrors() {
+    const errors = [];
+    const allItems = Object.values(checklistConfig).flat();
+    for (const id in manualChecksState) {
+        if (manualChecksState[id] === 'no') {
+            const itemConfig = allItems.find(item => item.id === id);
+            if (itemConfig) {
+                if (itemConfig.isDisclaimer) {
+                    const cache = detailsDataCache[id];
+                    errors.push({
+                        ...itemConfig,
+                        text: (cache && cache.message) ? cache.message : `Disclaimer flagged: ${id}`
+                    });
+                } else {
+                    errors.push(itemConfig);
+                }
+            }
+        }
+    }
+    return errors;
 }
 
-        function backToClients() {
-            document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
-            document.getElementById('clientsPage').classList.add('active');
-            window.scrollTo(0,0);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateReportButtonStatus();
+            checkValidationReadiness(); 
+        });
+
+        // --- Helper Functions ---
+        function findKey(row, potentialKeys) {
+            if (!row) return undefined;
+            const rowKeys = Object.keys(row);
+            const normalizeHeader = (str) => {
+                if (typeof str !== 'string') return '';
+                return str.toLowerCase().replace(/[^a-z0-9]/g, '');
+            };
+            for (const pKey of potentialKeys) {
+                const normalizedPKey = normalizeHeader(pKey);
+                const foundKey = rowKeys.find(rKey => normalizeHeader(rKey) === normalizedPKey);
+                if (foundKey) return foundKey;
+            }
+            return undefined;
         }
 
-        // Modal Logic
-        function showMaintenance() {
-            document.getElementById('maintenanceModal').classList.add('active');
+        function normalizeString(str) {
+            if (typeof str !== 'string' || !str) return '';
+            return str.toLowerCase().replace(/^[ivxlcdm]+\.\s*/, '').replace(/&/g, 'and').replace(/[^a-z0-9]/g, '');
         }
 
-        function closeModal() {
-            document.getElementById('maintenanceModal').classList.remove('active');
+        function extractRomanNumeral(text) {
+            if (typeof text !== 'string') return null;
+            const romanPattern = /^([IVXLCDM]+)(?=[^A-Z]|$)/;
+            const match = text.trim().match(romanPattern);
+            if (match) {
+                const romanCandidate = match[1];
+                if (/^(I{1,3}|IV|V|VI{1,3}|IX|X{1,3}|XL|L|LX{1,3}|XC|C{1,3}|CD|D|DC{1,3}|CM|M{1,3})$/.test(romanCandidate)) {
+                    return romanCandidate;
+                }
+            }
+            return null;
         }
 
-        function launchTool(toolName) {
-            alert("Launching: " + toolName);
+        function findPrioritizedSheet(sheetNameArray) {
+            if (!workbook) return null;
+            for (const sheetName of sheetNameArray) {
+                const lowerCaseSheetName = sheetName.toLowerCase().trim();
+                const actualSheetName = workbook.SheetNames.find(name => name.toLowerCase().trim() === lowerCaseSheetName);
+                if (actualSheetName) {
+                    return { sheet: workbook.Sheets[actualSheetName], name: actualSheetName };
+                }
+            }
+            return null;
         }
 
-        window.onclick = function(event) {
-            const modal = document.getElementById('maintenanceModal');
-            if (event.target === modal) {
-                closeModal();
+        function findSheet(sheetName) {
+            if (!workbook) return null;
+            const lowerCaseSheetName = sheetName.toLowerCase().trim();
+            const actualSheetName = workbook.SheetNames.find(name => name.toLowerCase().trim() === lowerCaseSheetName);
+            return actualSheetName ? workbook.Sheets[actualSheetName] : null;
+        }
+
+        function checkRequiredColumns(headers, columnConfig, showAlert = true) {
+            const missing = [];
+            const foundKeys = {};
+            const headerObject = headers.reduce((obj, h) => ({ ...obj, [h]: '' }), {});
+            for (const config of columnConfig) {
+                const { keyName, potentialNames } = config;
+                const foundKey = findKey(headerObject, potentialNames);
+                if (foundKey) {
+                    foundKeys[keyName] = foundKey;
+                } else {
+                    missing.push(`'${potentialNames.join("' or '")}'`);
+                }
+            }
+            if (missing.length > 0) {
+                if(showAlert) {
+                    alert("Cannot run validation. The 'Extracted Data' sheet is missing required columns:\n\n" + missing.join('\n'));
+                }
+                return null;
+            }
+            return foundKeys;
+        }
+
+        /**
+         * Finds rows in a dynamic range, stopping when the section identifier changes or the endUCode is met.
+         */
+        function findRowsInDynamicRange(searchRange) {
+            const { uCodeKey } = extractedDataKeys;
+            if (!uCodeKey || !extractedDataJson || extractedDataJson.length === 0) {
+                console.warn("Could not perform range search: 'uCodeKey' or 'extractedDataJson' is missing.");
+                return { status: 'KEYS_NOT_FOUND', data: [] };
+            }
+
+            const findIndexByUCode = (ucodes) => {
+                return extractedDataJson.findIndex(row => {
+                    const rowUCode = (row[uCodeKey] || '').toString().trim();
+                    return ucodes.some(code => rowUCode === code);
+                });
+            };
+
+            const startIndex = findIndexByUCode(searchRange.startUCode);
+
+        if (startIndex === -1) {
+            return { status: 'NOT_FOUND', data: [] };
+        }
+
+        // --- CORRECTED LOGIC ---
+        // Get the UCode from the row that was ACTUALLY found in the sheet.
+        const foundRow = extractedDataJson[startIndex];
+        const actualStartCode = (foundRow[uCodeKey] || '').toString().trim();
+        
+        // Now, determine the section identifier from the correct, found UCode.
+        const sectionIdentifier = actualStartCode.split('.')[0];
+
+            const relevantRows = [];
+            for (let i = startIndex; i < extractedDataJson.length; i++) {
+                const row = extractedDataJson[i];
+                const currentUCode = (row[uCodeKey] || '').toString().trim();
+
+                if (!currentUCode) {
+                    continue; // Ignore rows with no U.code
+                }
+
+                const currentSectionIdentifier = currentUCode.split('.')[0];
+
+                // If the section identifier changes, we've left the range.
+                if (currentSectionIdentifier !== sectionIdentifier) {
+                    break;
+                }
+
+                // The row is part of our section, so add it.
+                relevantRows.push(row);
+
+                // If this row's U.code matches one of the specified end codes, stop after adding it.
+                if (searchRange.endUCode.some(code => currentUCode === code)) {
+                    break;
+                }
+            }
+
+            return { status: 'FOUND', data: relevantRows };
+        }
+
+        /**
+         * Analyzes a range of items to see if any CWI quantity exceeds the WO quantity.
+         * Uses the new dynamic range finding logic.
+         */
+        function analyzeSearchRange(searchRange) {
+            const { cwiQtyKey, woQtyKey } = extractedDataKeys;
+            if (!cwiQtyKey || !woQtyKey) {
+                console.warn("Missing keys for quantity exceedance check. Ensure 'As per CWI (Qty)', and 'As per WO - Qty' columns are present.");
+                return { status: 'KEYS_NOT_FOUND', data: [] };
+            }
+
+            const rangeResult = findRowsInDynamicRange(searchRange);
+
+            if (rangeResult.status !== 'FOUND' || rangeResult.data.length === 0) {
+                return { status: rangeResult.status, data: [] }; // Returns NOT_FOUND or KEYS_NOT_FOUND
+            }
+
+            const relevantRows = rangeResult.data;
+            let isExceeded = false;
+let allQuantitiesAreZero = true; // Assume all are zero initially
+
+for (const row of relevantRows) {
+    const cwiQty = parseFloat(row[cwiQtyKey]) || 0;
+    const woQty = parseFloat(row[woQtyKey]) || 0;
+
+    if (cwiQty > 0 || woQty > 0) {
+        allQuantitiesAreZero = false; // Found a non-zero value
+    }
+
+    // Change is here: removed "woQty > 0 &&"
+    if (cwiQty > woQty) {
+        isExceeded = true;
+    }
+}
+
+let finalStatus = 'NOT_EXCEEDED';
+if (isExceeded) {
+    finalStatus = 'EXCEEDED';
+} else if (allQuantitiesAreZero) {
+    finalStatus = 'ALL_ZERO'; // New status for the N/A case
+}
+
+return {
+    status: finalStatus,
+    data: relevantRows
+};
+        }
+function analyzeDeductionsInMeasurement(config) {
+    const mstSheet = findSheet('Extracted Measurement Sheet');
+    if (!mstSheet) return { status: 'NO_MST_SHEET', data: [] };
+
+    const data = XLSX.utils.sheet_to_json(mstSheet);
+    // Find headers to get Qty column
+    const headers = XLSX.utils.sheet_to_json(mstSheet, { header: 1 })[0];
+    const qtyKey = findKey({ [headers[0]]: '' }, ['As per CWI (Qty)']) || headers[10]; // Fallback to index 10
+    const partKey = findKey({ [headers[0]]: '' }, ['Particulars']) || headers[1];
+
+    let relevantRows = [];
+    let insideSection = false;
+
+    for (const row of data) {
+        const part = (row[partKey] || "").toString().toLowerCase();
+        
+        if (part.includes(config.searchRange.startKeyword.toLowerCase())) insideSection = true;
+        if (config.searchRange.endKeyword !== "STOP_AT_END" && part.includes(config.searchRange.endKeyword.toLowerCase())) insideSection = false;
+
+        if (insideSection) {
+            const matchesFilter = config.filterKeywords.some(k => part.includes(k.toLowerCase()));
+            const isOriginalHeading = part === config.searchRange.startKeyword.toLowerCase();
+            
+            // Extract the deduction row, but skip the main heading of the section
+            if (matchesFilter && !isOriginalHeading) {
+                relevantRows.push(row);
+            }
+        }
+    }
+
+    const hasAnyQty = relevantRows.some(row => row[qtyKey] !== undefined && row[qtyKey] !== "" && parseFloat(row[qtyKey]) !== 0);
+
+    return {
+        status: relevantRows.length > 0 && hasAnyQty ? 'QTY_FOUND' : 'QTY_NOT_FOUND',
+        data: relevantRows
+    };
+}
+
+function analyzeTrenchingDisclaimer() {
+    const extractedSheet = findSheet('Extracted Data');
+    if (!extractedSheet || !extractedDataJson || extractedDataJson.length === 0) return { show: false };
+
+    const { uCodeKey, particularsKey, cwiQtyKey } = extractedDataKeys;
+    if (!uCodeKey || !particularsKey || !cwiQtyKey) return { show: false };
+
+    // Find trenching row
+    const trenchingRow = extractedDataJson.find(row => {
+        const part = (row[particularsKey] || '').toString().toLowerCase();
+        return part.includes('trenching work') || part.includes('trenching');
+    });
+
+    if (!trenchingRow) return { show: false };
+    const trenchingQty = parseFloat(trenchingRow[cwiQtyKey]) || 0;
+    if (trenchingQty <= 0) return { show: false };
+
+    // Check for "Existing flooring including bedding material"
+    const beddingRow = extractedDataJson.find(row => {
+        const part = (row[particularsKey] || '').toString().toLowerCase();
+        return part.includes('existing flooring') && part.includes('bedding material');
+    });
+
+    // Check for any row with UCode starting I_7.a through I_7.d
+    const i7Rows = extractedDataJson.filter(row => {
+        const ucode = (row[uCodeKey] || '').toString().trim().toUpperCase();
+        return ['I_7.A','I_7.B','I_7.C','I_7.D'].some(code => ucode.startsWith(code));
+    });
+
+    const beddingQty = beddingRow ? (parseFloat(beddingRow[cwiQtyKey]) || 0) : 0;
+    const i7HasQty = i7Rows.some(row => (parseFloat(row[cwiQtyKey]) || 0) > 0);
+
+    if (beddingQty > 0 || i7HasQty) {
+        return { 
+            show: true, 
+            message: `WARNING: Trenching work has a quantity (${trenchingQty}), and simultaneously quantities exist in "Existing flooring including bedding material" and/or items I_7.a–I_7.d. Trenching and these PCC/flooring items cannot have quantity at the same time. Please verify U.Code I_1.a.iv or I_7.a-I_7.d and remove one quantity or the other.` 
+        };
+    }
+    return { show: false };
+}
+function analyzeWaterproofingWallDeduction() {
+    const mstSheet = findSheet('Extracted Measurement Sheet');
+    if (!mstSheet) return { status: 'NO_MST_SHEET', data: [] };
+
+    const data = XLSX.utils.sheet_to_json(mstSheet);
+    const headers = XLSX.utils.sheet_to_json(mstSheet, { header: 1 })[0] || [];
+    
+    const partKey = headers[1] || 'Particulars';
+    const uCodeKey = headers[0] || 'U Code';
+    const qtyKey = headers[10] || 'As per CWI (Qty)';
+
+    let insideSection = false;
+    let relevantRows = [];
+    let foundI5 = false;
+
+    for (const row of data) {
+        const ucode = (row[uCodeKey] || '').toString().trim();
+        const part = (row[partKey] || '').toString().toLowerCase();
+
+        // Start when we find waterproofing treatment with I_5 ucode
+        if (ucode.startsWith('I_5') && part.includes('waterproofing')) {
+            insideSection = true;
+            foundI5 = true;
+            continue;
+        }
+
+        if (insideSection) {
+            // Stop when a new ucode appears that is different from I_5
+            if (ucode !== '' && !ucode.startsWith('I_5')) {
+                break;
+            }
+            // Capture wall rows
+            if (part.includes('wall')) {
+                const qty = parseFloat(row[qtyKey]) || 0;
+                if (qty !== 0) relevantRows.push(row);
+            }
+        }
+    }
+
+    const hasQty = relevantRows.length > 0;
+    return { status: hasQty ? 'QTY_FOUND' : 'QTY_NOT_FOUND', data: relevantRows, foundSection: foundI5 };
+}
+function analyzeSkirtingWidthDisclaimer() {
+    const mstSheet = findSheet('Extracted Measurement Sheet');
+    if (!mstSheet) return { show: false };
+
+    // Read as array to reliably find the Width column by header name
+    const rawRows = XLSX.utils.sheet_to_json(mstSheet, { header: 1, defval: '' });
+    if (rawRows.length < 2) return { show: false };
+
+    const headerRow = rawRows[0];
+
+    // Find column indices by header name (case-insensitive)
+    const findColIndex = (names) => {
+        return headerRow.findIndex(h => 
+            names.some(n => h.toString().toLowerCase().trim() === n.toLowerCase())
+        );
+    };
+
+    const uCodeColIdx = findColIndex(['u code', 'u.code', 'ucode', 'sr.no']);
+    const widthColIdx = findColIndex(['width', 'breadth', 'b', 'w']);
+
+    if (uCodeColIdx === -1 || widthColIdx === -1) {
+        // Fallback to positional: UCode=col0, Width=col23
+        const fallbackUCodeIdx = 0;
+        const fallbackWidthIdx = 23;
+        const problematicRows = rawRows.slice(1).filter(row => {
+            const ucode = (row[fallbackUCodeIdx] || '').toString().trim().toUpperCase();
+            if (!ucode.startsWith('I_11.C')) return false;
+            const width = parseFloat(row[fallbackWidthIdx]) || 0;
+            return width >= 1;
+        });
+        return {
+            show: problematicRows.length > 0,
+            message: `WARNING: U.Code I_11.c has a width value 1 or greater in measurement sheet. The breadth/height of skirting should not exceed 1. Please recheck the measurement sheet for U.Code I_11.c.`
+        };
+    }
+
+    // Use found column indices
+    const problematicRows = rawRows.slice(1).filter(row => {
+        const ucode = (row[uCodeColIdx] || '').toString().trim().toUpperCase();
+        if (!ucode.startsWith('I_11.C')) return false;
+        const width = parseFloat(row[widthColIdx]) || 0;
+        return width > 1;
+    });
+
+    return {
+        show: problematicRows.length > 0,
+        message: `WARNING: U.Code I_11.c has a width value 1 or greater in measurement sheet. The breadth/height of skirting should not exceed 1. Please recheck all rows with U.Code I_11.c.`
+    };
+}
+function analyzeChasingWork() {
+    if (!extractedDataJson || extractedDataJson.length === 0) return { status: 'NO_DATA', qty: 0 };
+    const { particularsKey, cwiQtyKey } = extractedDataKeys;
+    if (!particularsKey || !cwiQtyKey) return { status: 'KEYS_NOT_FOUND', qty: 0 };
+
+    const chasingRows = extractedDataJson.filter(row => {
+        const part = (row[particularsKey] || '').toString().toLowerCase();
+        return part.includes('chasing work');
+    });
+
+    const totalQty = chasingRows.reduce((sum, row) => sum + (parseFloat(row[cwiQtyKey]) || 0), 0);
+    return { status: totalQty > 0 ? 'QTY_FOUND' : 'QTY_NOT_FOUND', qty: totalQty, data: chasingRows };
+}
+        /**
+         * Analyzes a range of items, filters them, and checks if any have a positive CWI quantity.
+         * Uses the new dynamic range finding logic.
+         */
+        function analyzeCwiQtyInRange(searchRange, filterKeyword = null) {
+            const { particularsKey, cwiQtyKey } = extractedDataKeys;
+            if (!particularsKey || !cwiQtyKey) {
+                return { status: 'KEYS_NOT_FOUND', data: [] };
+            }
+
+            const rangeResult = findRowsInDynamicRange(searchRange);
+            
+            if (rangeResult.status !== 'FOUND' || rangeResult.data.length === 0) {
+                return { status: 'NOT_FOUND', data: [] }; // Simplify status
+            }
+
+            let relevantRows = rangeResult.data;
+
+            if (filterKeyword) {
+                relevantRows = relevantRows.filter(row => {
+                    const particulars = (row[particularsKey] || '').toString();
+                    return particulars.includes(filterKeyword);
+                });
+            }
+
+            if (relevantRows.length === 0) {
+                // The range was found, but the keyword filtered all items out.
+                return { status: 'NO_DATA', data: [] }; 
+            }
+
+            const hasPositiveQty = relevantRows.some(row => (parseFloat(row[cwiQtyKey]) || 0) > 0);
+
+            return {
+                status: hasPositiveQty ? 'DATA_WITH_POSITIVE_QTY' : 'DATA_WITH_ZERO_QTY',
+                data: relevantRows
+            };
+        }
+
+
+        // --- CORE VALIDATION LOGIC ---
+        function runGenericValidation(columnConfig, processRow) {
+            validationResultsEl.classList.add('hidden');
+            const extractedSheet = findSheet('Extracted Data');
+            if (!extractedSheet) { alert("'Extracted Data' sheet not found."); return null; }
+            const sheetDataAsArray = XLSX.utils.sheet_to_json(extractedSheet, { header: 1, defval: '' });
+            if (sheetDataAsArray.length < 1) { alert("'Extracted Data' sheet is empty or has no header row."); return null; }
+            const headers = sheetDataAsArray[0];
+            const keys = checkRequiredColumns(headers, columnConfig.keys);
+            if (!keys) return null;
+            const jsonData = XLSX.utils.sheet_to_json(extractedSheet);
+            const mismatches = [];
+            jsonData.forEach(row => {
+                const result = processRow(row, keys);
+                if (result) mismatches.push(result);
+            });
+            columnConfig.displayResults(mismatches, columnConfig);
+        }
+
+        // --- MASTER VALIDATION FUNCTION ---
+        function runMasterValidation(config) {
+            updateErrorReport([], config.errorType, () => {});
+            try {
+                const summarySheetInfo = parseSummarySheet(config);
+                const extractedGroups = parseExtractedDataSheet(config);
+                performComparison(summarySheetInfo, extractedGroups, config);
+            } catch (e) {
+                console.error("Validation Error:", e);
+                alert(`An error occurred during validation: ${e.message}`);
+            }
+        }
+
+        function runWoValidation() {
+            runMasterValidation({
+                summaryAmountKeys: ['As Per WO Amount (Rs)', 'Amount as per WO'],
+                extractedAmountKey: 'As per WO (Amt)',
+                errorType: errorTypes.WO_SUMMARY_MISMATCH
+            });
+        }
+
+        function runCwiValidation() {
+            runMasterValidation({
+                summaryAmountKeys: ['As Per CWI Amount (Rs)', 'Amount as per CWI'],
+                extractedAmountKey: 'As per CWI (Amt)',
+                errorType: errorTypes.CWI_SUMMARY_MISMATCH
+            });
+        }
+        
+        function parseSummarySheet(config) {
+            const summarySheetResult = findPrioritizedSheet(['Summary Sheet']);
+            if (!summarySheetResult) throw new Error("A valid sheet named 'Summary Sheet' could not be found.");
+            
+            const summarySheet = summarySheetResult.sheet;
+            const jsonData = XLSX.utils.sheet_to_json(summarySheet);
+            summaryData = [];
+            const uniqueItems = new Set();
+            
+            jsonData.forEach(row => {
+                const srNoKey = findKey(row, ['Sr.No', 'Sr. No']);
+                const itemKey = findKey(row, ['Item', 'Particulars', 'Items']);
+                const amountKey = findKey(row, config.summaryAmountKeys);
+                
+                if (itemKey && amountKey) {
+                    const item = row[itemKey];
+                    const amount = row[amountKey];
+                    if (item && typeof item === 'string' && item.trim() !== '' && typeof amount === 'number') {
+                        const normalizedItem = normalizeString(item);
+                        if (normalizedItem && !uniqueItems.has(normalizedItem)) {
+                            let romanNumeral = srNoKey && row[srNoKey] ? extractRomanNumeral(row[srNoKey].toString()) : null;
+                            summaryData.push({ originalName: item.trim(), normalizedName: normalizedItem, romanNumeral: romanNumeral, amount: amount });
+                            uniqueItems.add(normalizedItem);
+                        }
+                    }
+                }
+            });
+            if (summaryData.length === 0) throw new Error(`Could not parse data from '${summarySheetResult.name}'. Check for valid 'Item' and '${config.summaryAmountKeys.join('/')}' columns.`);
+            return { usedSheetName: summarySheetResult.name };
+        }
+
+        function parseExtractedDataSheet(config) {
+            const extractedSheet = findSheet('Extracted Data');
+            if (!extractedSheet) throw new Error("'Extracted Data' sheet not found.");
+            
+            const jsonData = XLSX.utils.sheet_to_json(extractedSheet);
+            const localExtractedDataGroups = [];
+            let currentGroup = null;
+            const romanHeaderPattern = /^(I{1,3}|IV|V|VI{1,3}|IX|X{1,3}|XL|L|LX{1,3}|XC|C{1,3}|CD|D|DC{1,3}|CM|M{1,3})$/;
+            
+            jsonData.forEach((row) => {
+                const uCodeKey = findKey(row, ['U.code', 'U Code']);
+                const particularsKey = findKey(row, ['Particulars', 'Item']);
+                const amountKey = findKey(row, [config.extractedAmountKey]);
+                
+                const uCodeValue = uCodeKey ? (row[uCodeKey] || '').toString().trim() : '';
+                const amountValue = (amountKey && typeof row[amountKey] === 'number') ? row[amountKey] : 0;
+                
+                if (romanHeaderPattern.test(uCodeValue)) {
+                    if (currentGroup) localExtractedDataGroups.push(currentGroup);
+                    let title = particularsKey ? (row[particularsKey] || '').toString().trim() : `Section ${uCodeValue}`;
+                    currentGroup = { title: title, romanNumeral: uCodeValue, total: amountValue, itemCount: amountValue > 0 ? 1 : 0, uCodeExample: uCodeValue };
+                } else if (currentGroup && amountValue > 0) {
+                    currentGroup.total += amountValue;
+                    currentGroup.itemCount++;
+                }
+            });
+            if (currentGroup) localExtractedDataGroups.push(currentGroup);
+            if (localExtractedDataGroups.length === 0) throw new Error("Could not parse 'Extracted Data' sheet groupings. Check for Roman numerals in the U.Code column.");
+            return localExtractedDataGroups;
+        }
+
+        function performComparison(summarySheetInfo, extractedGroups, config) {
+            resultsContainer.innerHTML = '';
+            validationResultsEl.classList.remove('hidden');
+            let hasErrors = false;
+            let perfectMatches = 0;
+            const mismatchesForReport = [];
+
+            extractedGroups.forEach(group => {
+                let summaryInfo = group.romanNumeral ? summaryData.find(item => item.romanNumeral === group.romanNumeral) : null;
+                if (!summaryInfo) {
+                    const normalizedGroupTitle = normalizeString(group.title);
+                    summaryInfo = summaryData.find(item => item.normalizedName === normalizedGroupTitle);
+                }
+                const summaryTotal = summaryInfo ? summaryInfo.amount : undefined;
+                const extractedTotal = group.total;
+                const resultCard = document.createElement('div');
+                let statusHtml;
+
+                if (summaryTotal !== undefined && Math.abs(summaryTotal - extractedTotal) < 0.01) {
+                    resultCard.className = 'p-4 rounded-lg border bg-green-50 border-green-400';
+                    statusHtml = `<span class="flex items-center font-bold text-green-700"><svg class="w-5 h-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>Perfect Match</span>`;
+                    perfectMatches++;
+                } else {
+                    hasErrors = true;
+                    mismatchesForReport.push({ group, summaryInfo, summaryTotal, extractedTotal });
+                    resultCard.className = 'p-4 rounded-lg border bg-red-50 border-red-400';
+                    statusHtml = `<span class="flex items-center font-bold text-red-700"><svg class="w-5 h-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>Mismatch</span>`;
+                }
+
+                const expected = summaryTotal !== undefined ? `₹${summaryTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'Not Found in Summary';
+                const calculated = `₹${extractedTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                const difference = summaryTotal !== undefined ? Math.abs(summaryTotal - extractedTotal) : 0;
+                const diffText = difference > 0.01 ? `₹${difference.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '₹0.00';
+                resultCard.innerHTML = `<div class="flex justify-between items-start mb-2"><p class="font-semibold text-gray-800">${group.romanNumeral || '•'}. ${group.title}</p><div class="text-sm">${statusHtml}</div></div><div class="text-sm grid grid-cols-1 md:grid-cols-3 gap-2 mb-2"><p>Summary ('${summarySheetInfo.usedSheetName}'): <span class="font-medium ${summaryTotal === undefined ? 'text-red-600' : ''}">${expected}</span></p><p>Extracted: <span class="font-medium">${calculated}</span></p><p>Difference: <span class="font-medium ${difference > 0.01 ? 'text-red-600' : 'text-green-600'}">${diffText}</span></p></div><div class="text-xs text-gray-600">Items processed: ${group.itemCount} | U.Code example: ${group.uCodeExample || 'N/A'}</div>`;
+                resultsContainer.appendChild(resultCard);
+            });
+            
+            const summaryMismatchFormatter = (mismatch, type) => {
+                const particulars = `${mismatch.group.romanNumeral || '•'}. ${mismatch.group.title}`;
+                let correction;
+                if (mismatch.summaryInfo) {
+                    const summaryAmount = mismatch.summaryTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 });
+                    const extractedAmount = mismatch.extractedTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 });
+                    correction = `The summary sheet shows ₹${summaryAmount}, but the calculated total from 'Extracted Data' is ₹${extractedAmount}. Check the amounts and items included in this section for discrepancies.`;
+                } else {
+                    correction = `This item group from 'Extracted Data' (Total: ₹${mismatch.extractedTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}) was not found in the summary sheet. Verify the item description or Sr.No (Roman Numeral) matches between the two sheets.`;
+                }
+                return { particulars, type, correction };
+            };
+            updateErrorReport(mismatchesForReport, config.errorType, summaryMismatchFormatter);
+
+            const overallStatus = document.createElement('div');
+            overallStatus.className = 'mb-4 p-4 rounded-lg text-center';
+            const validationTypeMatch = config.errorType.match(/\(([^)]+)\)/);
+            const validationType = validationTypeMatch ? validationTypeMatch[1] : 'Validation';
+
+            if (hasErrors) {
+                overallStatus.classList.add('bg-red-100', 'border', 'border-red-300');
+                overallStatus.innerHTML = `<div class="font-bold text-red-800 text-lg">⚠ ${validationType} Validation Complete: Issues Found</div><div class="text-red-700 mt-1">${perfectMatches} of ${extractedGroups.length} groups match perfectly. Using '${summarySheetInfo.usedSheetName}' for comparison.</div>`;
+                alert(`${validationType} Validation Complete: Issues found. Please review the mismatches in the results panel.`);
+            } else {
+                overallStatus.classList.add('bg-green-100', 'border', 'border-green-300');
+                overallStatus.innerHTML = `<div class="font-bold text-green-800 text-lg">✅ ${validationType} Validation Complete: All Totals Match!</div><div class="text-green-700 mt-1">All ${extractedGroups.length} groups validated successfully using '${summarySheetInfo.usedSheetName}'.</div>`;
+                alert(`${validationType} Validation Complete: All totals match perfectly!`);
+            }
+            resultsContainer.prepend(overallStatus);
+        }
+
+        // --- Other validation functions ---
+        function runTotalCheck() {
+            updateErrorReport([], errorTypes.TOTAL_CALC, ()=>{});
+            runGenericValidation({ 
+                keys: [{ keyName: 'totalKey', potentialNames: ['Total'] }, { keyName: 'savingsKey', potentialNames: ['Savings', 'Saving'] }, { keyName: 'excessKey', potentialNames: ['Excess'] }, { keyName: 'uCodeKey', potentialNames: ['U.code', 'U Code'] }, { keyName: 'particularsKey', potentialNames: ['Particulars', 'Item'] }, ], 
+                displayResults: displayTotalCheckResults }, 
+                (row, keys) => { 
+                    const sheetTotal = parseFloat(row[keys.totalKey]) || 0; const savings = parseFloat(row[keys.savingsKey]) || 0; const excess = parseFloat(row[keys.excessKey]) || 0; const calculatedTotal = savings + excess; 
+                    if (Math.abs(sheetTotal - calculatedTotal) > 0.01) { return { uCode: row[keys.uCodeKey] || 'N/A', particulars: row[keys.particularsKey] || 'No Description', savings, excess, sheetTotal, calculatedTotal }; } return null; 
+                }); 
+        }
+        function displayTotalCheckResults(mismatches) { 
+            resultsContainer.innerHTML = ''; validationResultsEl.classList.remove('hidden'); 
+            const totalCheckFormatter = (mismatch, type) => ({
+                particulars: `${mismatch.uCode} - ${mismatch.particulars}`,
+                type: type,
+                correction: `Calculation is incorrect. Sheet 'Total' (${mismatch.sheetTotal.toLocaleString()}) does not equal 'Savings' (${mismatch.savings.toLocaleString()}) + 'Excess' (${mismatch.excess.toLocaleString()}). The correct total should be ${mismatch.calculatedTotal.toLocaleString()}.`
+            });
+            updateErrorReport(mismatches, errorTypes.TOTAL_CALC, totalCheckFormatter);
+
+            if (mismatches.length === 0) { 
+                const successCard = document.createElement('div'); successCard.className = 'p-4 rounded-lg border bg-green-100 border-green-300 text-center'; 
+                successCard.innerHTML = `<div class="font-bold text-green-800 text-lg flex items-center justify-center"><svg class="w-6 h-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>All Totals Match!</div><div class="text-green-700 mt-1">All 'Total' values correctly equal 'Savings' + 'Excess'.</div>`; 
+                resultsContainer.appendChild(successCard); 
+                alert("Perfect! All 'Total' column values are correct."); 
+            } else { 
+                const errorSummaryCard = document.createElement('div'); 
+                errorSummaryCard.className = 'mb-4 p-4 rounded-lg text-center bg-red-100 border-red-300'; 
+                errorSummaryCard.innerHTML = `<div class="font-bold text-red-800 text-lg flex items-center justify-center"><svg class="w-6 h-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>Total Calculation Mismatches</div><div class="text-red-700 mt-1">${mismatches.length} item(s) have an incorrect 'Total' value.</div>`; 
+                resultsContainer.appendChild(errorSummaryCard); 
+                alert(`${mismatches.length} 'Total' calculation error(s) found. See details below.`); 
+                mismatches.forEach(item => { 
+                    const diffCard = document.createElement('div'); 
+                    diffCard.className = 'p-4 rounded-lg border border-red-300 bg-red-50'; 
+                    diffCard.innerHTML = `<p class="font-semibold text-gray-800">${item.uCode} - ${item.particulars}</p><div class="text-sm grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 mt-2"><p>Savings: <span class="font-medium">${item.savings.toLocaleString('en-IN')}</span></p><p>Excess: <span class="font-medium">${item.excess.toLocaleString('en-IN')}</span></p><p>Expected Total (S+E): <span class="font-bold text-green-700">${item.calculatedTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></p><p>Actual Total in Sheet: <span class="font-bold text-red-700">${item.sheetTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></p></div>`; 
+                    resultsContainer.appendChild(diffCard); 
+                }); 
+            } 
+        }
+        function runSavingsExcessCheck() { 
+            updateErrorReport([], errorTypes.SAVINGS_EXCESS_LOGIC, ()=>{});
+            runGenericValidation({ 
+                keys: [
+                    { keyName: 'amtWoKey', potentialNames: ['As per WO (Amt)', 'Amt as per PO'] }, 
+                    { keyName: 'amtCwiKey', potentialNames: ['As per CWI (Amt)'] }, 
+                    { keyName: 'savingsKey', potentialNames: ['Savings', 'Saving'] }, 
+                    { keyName: 'excessKey', potentialNames: ['Excess'] }, 
+                    { keyName: 'uCodeKey', potentialNames: ['U.code', 'U Code'] }, 
+                    { keyName: 'particularsKey', potentialNames: ['Particulars', 'Item'] },
+                ], 
+                displayResults: displaySavingsExcessCheckResults }, 
+                (row, keys) => { 
+                    const amtWO = parseFloat(row[keys.amtWoKey]) || 0;
+                    const amtCWI = parseFloat(row[keys.amtCwiKey]) || 0;
+                    const actualSavings = parseFloat(row[keys.savingsKey]) || 0;
+                    const actualExcess = parseFloat(row[keys.excessKey]) || 0;
+                    let expectedSavings = 0;
+                    let expectedExcess = 0;
+
+                    if (amtWO > amtCWI) {
+                        expectedSavings = amtCWI - amtWO;
+                    }
+                    if (amtCWI > amtWO) {
+                        expectedExcess = amtCWI - amtWO;
+                    }
+                    
+                    if (Math.abs(actualSavings - expectedSavings) > 0.01 || Math.abs(actualExcess - expectedExcess) > 0.01) {
+                        return { uCode: row[keys.uCodeKey] || 'N/A', particulars: row[keys.particularsKey] || 'No Description', amtWO, amtCWI, actualSavings, actualExcess, expectedSavings, expectedExcess };
+                    }
+                    return null; 
+                }); 
+        }
+        function displaySavingsExcessCheckResults(mismatches) { 
+            resultsContainer.innerHTML = ''; validationResultsEl.classList.remove('hidden'); 
+            const savingsExcessFormatter = (mismatch, type) => ({
+                particulars: `${mismatch.uCode} - ${mismatch.particulars}`,
+                type: type,
+                correction: `Logic error. Based on WO Amt (${mismatch.amtWO.toLocaleString()}) and CWI Amt (${mismatch.amtCWI.toLocaleString()}), the expected Savings/Excess should be ${mismatch.expectedSavings.toLocaleString()}/${mismatch.expectedExcess.toLocaleString()}, but the sheet shows ${mismatch.actualSavings.toLocaleString()}/${mismatch.actualExcess.toLocaleString()}.`
+            });
+            updateErrorReport(mismatches, errorTypes.SAVINGS_EXCESS_LOGIC, savingsExcessFormatter);
+
+            if (mismatches.length === 0) { 
+                const successCard = document.createElement('div'); successCard.className = 'p-4 rounded-lg border bg-green-100 border-green-300 text-center'; 
+                successCard.innerHTML = `<div class="font-bold text-green-800 text-lg flex items-center justify-center"><svg class="w-6 h-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>Logic Validated!</div><div class="text-green-700 mt-1">All 'Savings' and 'Excess' values are calculated correctly.</div>`; 
+                resultsContainer.appendChild(successCard); 
+                alert("Perfect! The logic for 'Savings' and 'Excess' holds true for all items."); 
+            } else { 
+                const errorSummaryCard = document.createElement('div'); 
+                errorSummaryCard.className = 'mb-4 p-4 rounded-lg text-center bg-red-100 border-red-300'; 
+                errorSummaryCard.innerHTML = `<div class="font-bold text-red-800 text-lg flex items-center justify-center"><svg class="w-6 h-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>Calculation Logic Errors</div><div class="text-red-700 mt-1">${mismatches.length} item(s) have incorrect 'Savings' or 'Excess' values.</div>`; 
+                resultsContainer.appendChild(errorSummaryCard); 
+                alert(`${mismatches.length} calculation logic error(s) found. See details below.`); 
+                mismatches.forEach(item => { 
+                    const diffCard = document.createElement('div'); 
+                    diffCard.className = 'p-4 rounded-lg border border-red-300 bg-red-50'; 
+                    diffCard.innerHTML = `<p class="font-semibold text-gray-800">${item.uCode} - ${item.particulars}</p><div class="text-xs text-gray-600 mt-1">(WO Amt: ${item.amtWO.toLocaleString('en-IN')}, CWI Amt: ${item.amtCWI.toLocaleString('en-IN')})</div><div class="text-sm grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 mt-2"><p>Actual Savings: <span class="font-bold ${Math.abs(item.actualSavings - item.expectedSavings) > 0.01 ? 'text-red-700' : ''}">${item.actualSavings.toLocaleString('en-IN')}</span></p><p>Expected Savings: <span class="font-bold text-green-700">${item.expectedSavings.toLocaleString('en-IN')}</span></p><p>Actual Excess: <span class="font-bold ${Math.abs(item.actualExcess - item.expectedExcess) > 0.01 ? 'text-red-700' : ''}">${item.actualExcess.toLocaleString('en-IN')}</span></p><p>Expected Excess: <span class="font-bold text-green-700">${item.expectedExcess.toLocaleString('en-IN')}</span></p></div>`; 
+                    resultsContainer.appendChild(diffCard); 
+                }); 
+            } 
+        }
+        function runSavingsExcessCwiWoCheck() {
+            updateErrorReport([], errorTypes.SAVINGS_EXCESS_CWI_WO_MISMATCH, ()=>{});
+            runGenericValidation({ 
+                keys: [
+                    { keyName: 'savingsKey', potentialNames: ['Savings', 'Saving'] },
+                    { keyName: 'excessKey', potentialNames: ['Excess'] },
+                    { keyName: 'cwiAmtKey', potentialNames: ['As per CWI (Amt)'] },
+                    { keyName: 'woAmtKey', potentialNames: ['As per WO (Amt)', 'Amt as per PO'] },
+                    { keyName: 'uCodeKey', potentialNames: ['U.code', 'U Code'] },
+                    { keyName: 'particularsKey', potentialNames: ['Particulars', 'Item'] },
+                ], 
+                displayResults: displaySavingsExcessCwiWoResults 
+            }, (row, keys) => { 
+                const savings = parseFloat(row[keys.savingsKey]) || 0;
+                const excess = parseFloat(row[keys.excessKey]) || 0;
+                const cwiAmt = parseFloat(row[keys.cwiAmtKey]) || 0;
+                const woAmt = parseFloat(row[keys.woAmtKey]) || 0;
+
+                const savingsAndExcess = savings + excess;
+                const cwiMinusWo = cwiAmt - woAmt;
+
+                if (Math.abs(savingsAndExcess - cwiMinusWo) > 0.01) {
+                    return {
+                        uCode: row[keys.uCodeKey] || 'N/A',
+                        particulars: row[keys.particularsKey] || 'No Description',
+                        savingsAndExcess,
+                        cwiMinusWo
+                    };
+                }
+                return null; 
+            }); 
+        }
+        function displaySavingsExcessCwiWoResults(mismatches) { 
+            resultsContainer.innerHTML = ''; 
+            validationResultsEl.classList.remove('hidden'); 
+            const formatter = (mismatch, type) => ({
+                particulars: `${mismatch.uCode} - ${mismatch.particulars}`,
+                type: type,
+                correction: `Calculation does not match. (Savings + Excess) is ${mismatch.savingsAndExcess.toLocaleString()}, but (CWI Amt - WO Amt) is ${mismatch.cwiMinusWo.toLocaleString()}.`
+            });
+            updateErrorReport(mismatches, errorTypes.SAVINGS_EXCESS_CWI_WO_MISMATCH, formatter);
+
+            if (mismatches.length === 0) { 
+                const successCard = document.createElement('div');
+                successCard.className = 'p-4 rounded-lg border bg-green-100 border-green-300 text-center'; 
+                successCard.innerHTML = `<div class="font-bold text-green-800 text-lg flex items-center justify-center"><svg class="w-6 h-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>All Checks Passed!</div><div class="text-green-700 mt-1">'Savings + Excess' correctly equals 'CWI Amt - WO Amt' for all rows.</div>`; 
+                resultsContainer.appendChild(successCard); 
+                alert("Perfect! The 'Savings + Excess = CWI - WO' check passed for all items."); 
+            } else { 
+                const errorSummaryCard = document.createElement('div'); 
+                errorSummaryCard.className = 'mb-4 p-4 rounded-lg text-center bg-red-100 border-red-300'; 
+                errorSummaryCard.innerHTML = `<div class="font-bold text-red-800 text-lg flex items-center justify-center"><svg class="w-6 h-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>Formula Mismatches Found</div><div class="text-red-700 mt-1">${mismatches.length} item(s) failed the 'Savings + Excess = CWI - WO' check.</div>`; 
+                resultsContainer.appendChild(errorSummaryCard); 
+                alert(`${mismatches.length} item(s) failed the formula check. See details below.`); 
+                mismatches.forEach(item => { 
+                    const diffCard = document.createElement('div'); 
+                    diffCard.className = 'p-4 rounded-lg border border-red-300 bg-red-50'; 
+                    diffCard.innerHTML = `<p class="font-semibold text-gray-800">${item.uCode} - ${item.particulars}</p><div class="text-sm grid grid-cols-2 gap-4 mt-2"><p>Savings + Excess: <span class="font-bold text-red-700">${item.savingsAndExcess.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></p><p>CWI Amt - WO Amt: <span class="font-bold text-green-700">${item.cwiMinusWo.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></p></div>`; 
+                    resultsContainer.appendChild(diffCard); 
+                }); 
+            } 
+        }
+        function displayVarianceCheckResults(mismatches, config) { 
+            resultsContainer.innerHTML = ''; validationResultsEl.classList.remove('hidden');
+            const labels = config.labels;
+            const errorType = config.errorType;
+
+            const varianceFormatter = (mismatch, type) => ({
+                particulars: `${mismatch.uCode} - ${mismatch.particulars}`,
+                type: type,
+                correction: `Calculation for '${labels.title}' is incorrect. Expected variance is ${mismatch.calculatedVariance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}, but the sheet shows ${mismatch.sheetVariance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}.`
+            });
+            updateErrorReport(mismatches, errorType, varianceFormatter);
+
+            if (mismatches.length === 0) { 
+                const successCard = document.createElement('div'); successCard.className = 'p-4 rounded-lg border bg-green-100 border-green-300 text-center'; 
+                successCard.innerHTML = `<div class="font-bold text-green-800 text-lg flex items-center justify-center"><svg class="w-6 h-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>${labels.title} Validated!</div><div class="text-green-700 mt-1">${labels.success}</div>`; 
+                resultsContainer.appendChild(successCard); 
+                alert(`Perfect! ${labels.success}`); 
+            } else { 
+                const errorSummaryCard = document.createElement('div'); 
+                errorSummaryCard.className = 'mb-4 p-4 rounded-lg text-center bg-red-100 border-red-300'; 
+                errorSummaryCard.innerHTML = `<div class="font-bold text-red-800 text-lg flex items-center justify-center"><svg class="w-6 h-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>${labels.title} Mismatches</div><div class="text-red-700 mt-1">${mismatches.length} item(s) have ${labels.error}</div>`; 
+                resultsContainer.appendChild(errorSummaryCard); 
+                alert(`${mismatches.length} variance calculation error(s) found. See details below.`); 
+                mismatches.forEach(item => { 
+                    const diffCard = document.createElement('div'); 
+                    diffCard.className = 'p-4 rounded-lg border border-red-300 bg-red-50'; 
+                    diffCard.innerHTML = `<p class="font-semibold text-gray-800">${item.uCode} - ${item.particulars}</p><div class="text-xs text-gray-600 mt-1">(${labels.col1}: ${item.val1.toLocaleString('en-IN')}, ${labels.col2}: ${item.val2.toLocaleString('en-IN')})</div><div class="text-sm grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 mt-2"><p>Expected Variance: <span class="font-bold text-green-700">${item.calculatedVariance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></p><p>Actual Variance: <span class="font-bold text-red-700">${item.sheetVariance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></p></div>`; 
+                    resultsContainer.appendChild(diffCard); 
+                }); 
+            } 
+        }
+        function runVarianceCwiWoCheck() { 
+            updateErrorReport([], errorTypes.CWI_WO_VARIANCE, ()=>{});
+            runGenericValidation({ 
+                errorType: errorTypes.CWI_WO_VARIANCE,
+                keys: [ { keyName: 'varianceKey', potentialNames: ['Variance (CWI vs WO)'] }, { keyName: 'val1Key', potentialNames: ['As per CWI (Qty)'] }, { keyName: 'val2Key', potentialNames: ['As per WO - Qty'] }, { keyName: 'uCodeKey', potentialNames: ['U.code', 'U Code'] }, { keyName: 'particularsKey', potentialNames: ['Particulars', 'Item'] }, ], 
+                displayResults: (m, c) => displayVarianceCheckResults(m, c), 
+                labels: { title: "CWI vs WO Quantity Variance", success: "All 'Variance (CWI vs WO)' values are correct.", error: "incorrect 'Variance (CWI vs WO)' values.", col1: 'CWI Qty', col2: 'WO Qty' } }, 
+                (row, keys) => { 
+                    const sheetVariance = parseFloat(row[keys.varianceKey]) || 0; const val1 = parseFloat(row[keys.val1Key]) || 0; const val2 = parseFloat(row[keys.val2Key]) || 0; const calculatedVariance = val1 - val2; 
+                    if (Math.abs(sheetVariance - calculatedVariance) > 0.01) { return { uCode: row[keys.uCodeKey] || 'N/A', particulars: row[keys.particularsKey] || 'No Description', val1: val1, val2: val2, sheetVariance, calculatedVariance }; } return null; 
+                }); 
+        }
+        function runWorkNotInWoCheck() {
+            updateErrorReport([], errorTypes.WORK_NOT_IN_WO, ()=>{});
+            runGenericValidation({ 
+                keys: [{ keyName: 'varianceKey', potentialNames: ['Variance (CWI vs WO)'] }, { keyName: 'woQtyKey', potentialNames: ['As per WO - Qty', 'As per WO/PO (Qty)'] }, { keyName: 'remarkKey', potentialNames: ['Remark', 'Remarks'] }, { keyName: 'uCodeKey', potentialNames: ['U.code', 'U Code'] }, { keyName: 'particularsKey', potentialNames: ['Particulars', 'Item'] }, ], 
+                displayResults: displayWorkNotInWoResults }, 
+                (row, keys) => { 
+                    const variance = parseFloat(row[keys.varianceKey]) || 0; const woQty = parseFloat(row[keys.woQtyKey]) || 0; const remark = (row[keys.remarkKey] || '').toString().trim(); 
+                    if (variance > 0 && woQty === 0 && remark === '') { return { uCode: row[keys.uCodeKey] || 'N/A', particulars: row[keys.particularsKey] || 'No Description', variance: variance, }; } return null; 
+                }); 
+        }
+        function displayWorkNotInWoResults(issues) { 
+            resultsContainer.innerHTML = ''; validationResultsEl.classList.remove('hidden'); 
+            const workNotInWoFormatter = (issue, type) => ({
+                particulars: `${issue.uCode} - ${issue.particulars}`,
+                type: type,
+                correction: `This item has an executed quantity (${issue.variance.toLocaleString()}) but was not in the original Work Order (WO Qty = 0). A remark is required for approval.`
+            });
+            updateErrorReport(issues, errorTypes.WORK_NOT_IN_WO, workNotInWoFormatter);
+
+            if (issues.length === 0) { 
+                const successCard = document.createElement('div'); successCard.className = 'p-4 rounded-lg border bg-green-100 border-green-300 text-center'; 
+                successCard.innerHTML = `<div class="font-bold text-green-800 text-lg flex items-center justify-center"><svg class="w-6 h-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>All Checks Passed!</div><div class="text-green-700 mt-1">No items found that were executed without being in the Work Order and are missing a remark.</div>`; 
+                resultsContainer.appendChild(successCard); 
+                alert("Perfect! No items were found that required a remark."); 
+            } else { 
+                const errorSummaryCard = document.createElement('div'); 
+                errorSummaryCard.className = 'mb-4 p-4 rounded-lg text-center bg-red-100 border-red-300'; 
+                errorSummaryCard.innerHTML = `<div class="font-bold text-red-800 text-lg flex items-center justify-center"><svg class="w-6 h-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>Action Required: Missing Remarks</div><div class="text-red-700 mt-1">${issues.length} item(s) were executed but not in the Work Order and require a remark for approval.</div>`; 
+                resultsContainer.appendChild(errorSummaryCard); 
+                alert(`${issues.length} item(s) require a remark. See details below.`); 
+                issues.forEach(item => { 
+                    const issueCard = document.createElement('div'); 
+                    issueCard.className = 'p-4 rounded-lg border border-red-300 bg-red-50'; 
+                    issueCard.innerHTML = `<p class="font-semibold text-gray-800">${item.uCode} - ${item.particulars}</p><div class="text-sm grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 mt-2"><p>Status: <span class="font-bold text-red-700">Remark Required</span></p><p>Variance Qty: <span class="font-medium">${item.variance.toLocaleString('en-IN')}</span></p></div><div class="text-xs text-gray-600 mt-2">This item has an executed quantity but was not in the original Work Order (WO Qty = 0). Please add a remark like 'Work executed but not in WO. PM approval required.'</div>`; 
+                    resultsContainer.appendChild(issueCard); 
+                }); 
+            } 
+        }
+        function runExceededWoQtyCheck() { 
+            updateErrorReport([], errorTypes.EXCEEDED_WO_QTY, ()=>{});
+            runGenericValidation({ 
+                keys: [ { keyName: 'varianceKey', potentialNames: ['Variance (CWI vs WO)'] }, { keyName: 'woQtyKey', potentialNames: ['As per WO - Qty', 'As per WO/PO (Qty)'] }, { keyName: 'cwiQtyKey', potentialNames: ['As per CWI (Qty)'] }, { keyName: 'remarkKey', potentialNames: ['Remark', 'Remarks'] }, { keyName: 'uCodeKey', potentialNames: ['U.code', 'U Code'] }, { keyName: 'particularsKey', potentialNames: ['Particulars', 'Item'] } ], 
+                displayResults: displayExceededWoQtyResults }, 
+                (row, keys) => { 
+                    const variance = parseFloat(row[keys.varianceKey]) || 0; const woQty = parseFloat(row[keys.woQtyKey]) || 0; const remark = (row[keys.remarkKey] || '').toString().trim(); 
+                    if (variance > 0 && woQty > 0 && remark === '') { const cwiQty = parseFloat(row[keys.cwiQtyKey]) || 0; return { uCode: row[keys.uCodeKey] || 'N/A', particulars: row[keys.particularsKey] || 'No Description', woQty, cwiQty, variance }; } return null; 
+                }); 
+        }
+        function displayExceededWoQtyResults(issues) { 
+            resultsContainer.innerHTML = ''; validationResultsEl.classList.remove('hidden'); 
+            const exceededWoQtyFormatter = (issue, type) => ({
+                particulars: `${issue.uCode} - ${issue.particulars}`,
+                type: type,
+                correction: `Executed CWI quantity (${issue.cwiQty.toLocaleString()}) exceeds WO quantity (${issue.woQty.toLocaleString()}) by ${issue.variance.toLocaleString()}. A remark explaining the excess is required.`
+            });
+            updateErrorReport(issues, errorTypes.EXCEEDED_WO_QTY, exceededWoQtyFormatter);
+
+            if (issues.length === 0) { 
+                const successCard = document.createElement('div'); successCard.className = 'p-4 rounded-lg border bg-green-100 border-green-300 text-center'; 
+                successCard.innerHTML = `<div class="font-bold text-green-800 text-lg flex items-center justify-center"><svg class="w-6 h-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>No Unexplained Exceeded Quantities</div><div class="text-green-700 mt-1">All items with quantities exceeding the Work Order have been remarked.</div>`; 
+                resultsContainer.appendChild(successCard); 
+                alert("Perfect! No unexplained exceeded quantities were found."); 
+            } else { 
+                const errorSummaryCard = document.createElement('div'); 
+                errorSummaryCard.className = 'mb-4 p-4 rounded-lg text-center bg-yellow-100 border-yellow-300'; 
+                errorSummaryCard.innerHTML = `<div class="font-bold text-yellow-800 text-lg flex items-center justify-center"><svg class="w-6 h-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>Exceeded Quantities Require Remarks</div><div class="text-yellow-700 mt-1">${issues.length} item(s) were executed in excess and are missing a remark.</div>`; 
+                resultsContainer.appendChild(errorSummaryCard); 
+                alert(`${issues.length} item(s) exceeded the WO quantity and require a remark. See details below.`); 
+                issues.forEach(item => { 
+                    const issueCard = document.createElement('div'); 
+                    issueCard.className = 'p-4 rounded-lg border border-yellow-400 bg-yellow-50'; 
+                    issueCard.innerHTML = `<p class="font-semibold text-gray-800">${item.uCode} - ${item.particulars}</p><div class="mt-2 p-2 bg-yellow-100 rounded-md"><div class="text-sm grid grid-cols-1 md:grid-cols-3 gap-2"><p>WO Qty: <span class="font-medium">${item.woQty.toLocaleString('en-IN')}</span></p><p>Executed CWI Qty: <span class="font-bold text-red-700">${item.cwiQty.toLocaleString('en-IN')}</span></p><p>Exceeded By: <span class="font-medium">${item.variance.toLocaleString('en-IN')}</span></p></div></div><div class="text-sm mt-2"><p>Status: <span class="font-bold text-red-700">Remark Required</span></p></div>`; 
+                    resultsContainer.appendChild(issueCard); 
+                }); 
+            } 
+        }
+        
+        function runVarianceThresholdCheck() {
+            updateErrorReport([], errorTypes.POSITIVE_VARIANCE_NOS, ()=>{});
+            runGenericValidation({
+                keys: [
+                    { keyName: 'unitKey', potentialNames: ['Unit'] },
+                    { keyName: 'cwiQtyKey', potentialNames: ['As per CWI (Qty)'] },
+                    { keyName: 'woQtyKey', potentialNames: ['As per WO - Qty', 'As per WO/PO (Qty)'] },
+                    { keyName: 'uCodeKey', potentialNames: ['U.code', 'U Code'] },
+                    { keyName: 'particularsKey', potentialNames: ['Particulars', 'Item'] }
+                ],
+                displayResults: displayVarianceThresholdResults
+            }, (row, keys) => {
+                const unit = (row[keys.unitKey] || '').toString().toLowerCase().replace(/\./g, '');
+                const targetUnits = ['nos', 'no'];
+                
+                if (!targetUnits.includes(unit)) {
+                    return null;
+                }
+
+                const cwiQty = parseFloat(row[keys.cwiQtyKey]) || 0;
+                const woQty = parseFloat(row[keys.woQtyKey]) || 0;
+                
+                if (woQty === 0) {
+                    return null;
+                }
+
+                const variancePct = ((cwiQty - woQty) / woQty) * 100;
+
+                if (variancePct > 10) {
+                    return {
+                        uCode: row[keys.uCodeKey] || 'N/A',
+                        particulars: row[keys.particularsKey] || 'No Description',
+                        woQty,
+                        cwiQty,
+                        variancePct
+                    };
+                }
+                
+                return null;
+            });
+        }
+        
+        function displayVarianceThresholdResults(issues) {
+            resultsContainer.innerHTML = '';
+            validationResultsEl.classList.remove('hidden');
+
+            const varianceNosFormatter = (issue, type) => ({
+                particulars: `${issue.uCode} - ${issue.particulars}`,
+                type: type,
+                correction: `Quantity variance for this 'Nos.' item is +${issue.variancePct.toFixed(2)}%, which is over the 10% threshold. (WO Qty: ${issue.woQty.toLocaleString()}, Executed CWI Qty: ${issue.cwiQty.toLocaleString()}). Please review for accuracy.`
+            });
+            updateErrorReport(issues, errorTypes.POSITIVE_VARIANCE_NOS, varianceNosFormatter);
+
+            if (issues.length === 0) {
+                const successCard = document.createElement('div');
+                successCard.className = 'p-4 rounded-lg border bg-green-100 border-green-300 text-center';
+                successCard.innerHTML = `<div class="font-bold text-green-800 text-lg flex items-center justify-center"><svg class="w-6 h-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>All Variances OK</div><div class="text-green-700 mt-1">No 'Nos.' items found with a positive quantity variance exceeding 10%.</div>`;
+                resultsContainer.appendChild(successCard);
+                alert("Perfect! All 'Nos.' item quantity variances are within the threshold.");
+            } else {
+                const errorSummaryCard = document.createElement('div');
+                errorSummaryCard.className = 'mb-4 p-4 rounded-lg text-center bg-orange-100 border-orange-300';
+                errorSummaryCard.innerHTML = `<div class="font-bold text-orange-800 text-lg flex items-center justify-center"><svg class="w-6 h-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>Significant Variances Found</div><div class="text-orange-700 mt-1">${issues.length} 'Nos.' item(s) have a positive quantity variance greater than 10%.</div>`;
+                resultsContainer.appendChild(errorSummaryCard);
+                alert(`${issues.length} 'Nos.' item(s) exceeded the >10% positive variance threshold. See details below.`);
+                
+                issues.forEach(item => {
+                    const issueCard = document.createElement('div');
+                    const varianceText = `<span class="font-bold text-orange-800">+${item.variancePct.toFixed(2)}%</span>`;
+                    const cardClass = 'p-4 rounded-lg border border-orange-400 bg-orange-50';
+                    
+                    issueCard.className = cardClass;
+                    issueCard.innerHTML = `
+                        <p class="font-semibold text-gray-800">${item.uCode} - ${item.particulars}</p>
+                        <div class="mt-2 p-2 bg-white/50 rounded-md">
+                            <div class="text-sm grid grid-cols-1 md:grid-cols-3 gap-2">
+                                <p>Planned Qty (WO): <span class="font-medium">${item.woQty.toLocaleString('en-IN')}</span></p>
+                                <p>Actual Qty (CWI): <span class="font-medium">${item.cwiQty.toLocaleString('en-IN')}</span></p>
+                                <p>Variance: ${varianceText}</p>
+                            </div>
+                        </div>`;
+                    resultsContainer.appendChild(issueCard);
+                });
+            }
+        }
+
+        function runRunningItemsVarianceCheck() {
+            updateErrorReport([], errorTypes.POSITIVE_VARIANCE_RUNNING, ()=>{});
+            runGenericValidation({
+                keys: [
+                    { keyName: 'unitKey', potentialNames: ['Unit'] },
+                    { keyName: 'cwiQtyKey', potentialNames: ['As per CWI (Qty)'] },
+                    { keyName: 'woQtyKey', potentialNames: ['As per WO - Qty', 'As per WO/PO (Qty)'] },
+                    { keyName: 'uCodeKey', potentialNames: ['U.code', 'U Code'] },
+                    { keyName: 'particularsKey', potentialNames: ['Particulars', 'Item'] }
+                ],
+                displayResults: displayRunningItemsVarianceResults
+            }, (row, keys) => {
+                const unit = (row[keys.unitKey] || '').toString().toLowerCase().replace(/\./g, '');
+                const isRunningUnit = unit.includes('rft') || unit.includes('rmt');
+                
+                if (!isRunningUnit) {
+                    return null; 
+                }
+
+                const cwiQty = parseFloat(row[keys.cwiQtyKey]) || 0;
+                const woQty = parseFloat(row[keys.woQtyKey]) || 0;
+
+                if (woQty === 0) {
+                    return null;
+                }
+
+                const variancePct = ((cwiQty - woQty) / woQty) * 100;
+
+                if (variancePct > 10) {
+                    return {
+                        uCode: row[keys.uCodeKey] || 'N/A',
+                        particulars: row[keys.particularsKey] || 'No Description',
+                        unit: row[keys.unitKey],
+                        woQty,
+                        cwiQty,
+                        variancePct
+                    };
+                }
+                
+                return null;
+            });
+        }
+
+        function displayRunningItemsVarianceResults(issues) {
+            resultsContainer.innerHTML = '';
+            validationResultsEl.classList.remove('hidden');
+
+            const varianceRunningFormatter = (issue, type) => ({
+                particulars: `${issue.uCode} - ${issue.particulars}`,
+                type: type,
+                correction: `Quantity variance for this running item (${issue.unit}) is +${issue.variancePct.toFixed(2)}%, which is over the 10% threshold. (WO Qty: ${issue.woQty.toLocaleString()}, Executed CWI Qty: ${issue.cwiQty.toLocaleString()}). Please review for accuracy.`
+            });
+            updateErrorReport(issues, errorTypes.POSITIVE_VARIANCE_RUNNING, varianceRunningFormatter);
+
+            if (issues.length === 0) {
+                const successCard = document.createElement('div');
+                successCard.className = 'p-4 rounded-lg border bg-green-100 border-green-300 text-center';
+                successCard.innerHTML = `<div class="font-bold text-green-800 text-lg flex items-center justify-center"><svg class="w-6 h-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>Running Item Variances OK</div><div class="text-green-700 mt-1">No R.ft/R.mt items found with a positive quantity variance exceeding 10%.</div>`;
+                resultsContainer.appendChild(successCard);
+                alert("Perfect! All running item quantity variances are within the >10% threshold.");
+            } else {
+                const errorSummaryCard = document.createElement('div');
+                errorSummaryCard.className = 'mb-4 p-4 rounded-lg text-center bg-cyan-100 border-cyan-300';
+                errorSummaryCard.innerHTML = `<div class="font-bold text-cyan-800 text-lg flex items-center justify-center"><svg class="w-6 h-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>Significant Running Item Variances Found</div><div class="text-cyan-700 mt-1">${issues.length} R.ft/R.mt item(s) have a positive quantity variance greater than 10%.</div>`;
+                resultsContainer.appendChild(errorSummaryCard);
+                alert(`${issues.length} R.ft/R.mt item(s) exceeded the >10% positive variance threshold. See details below.`);
+                
+                issues.forEach(item => {
+                    const issueCard = document.createElement('div');
+                    const varianceText = `<span class="font-bold text-cyan-800">+${item.variancePct.toFixed(2)}%</span>`;
+                    const cardClass = 'p-4 rounded-lg border border-cyan-400 bg-cyan-50';
+
+                    issueCard.className = cardClass;
+                    issueCard.innerHTML = `
+                        <p class="font-semibold text-gray-800">${item.uCode} - ${item.particulars}</p>
+                        <div class="mt-2 p-2 bg-white/50 rounded-md">
+                            <div class="text-sm grid grid-cols-1 md:grid-cols-3 gap-2">
+                                <p>Planned Qty (WO): <span class="font-medium">${item.woQty.toLocaleString('en-IN')}</span></p>
+                                <p>Actual Qty (CWI): <span class="font-medium">${item.cwiQty.toLocaleString('en-IN')}</span></p>
+                                <p>Variance (<span class="italic">${item.unit}</span>): ${varianceText}</p>
+                            </div>
+                        </div>`;
+                    resultsContainer.appendChild(issueCard);
+                });
+            }
+        }
+
+        // --- DEBUG FUNCTION ---
+        function debugHeaders() {
+            validationResultsEl.classList.add('hidden');
+            const extractedSheet = findSheet('Extracted Data');
+            if (!extractedSheet) {
+                alert("Could not find the 'Extracted Data' sheet.");
+                return;
+            }
+            const sheetDataAsArray = XLSX.utils.sheet_to_json(extractedSheet, { header: 1, defval: '' });
+            if (sheetDataAsArray.length < 1) {
+                alert("'Extracted Data' sheet is empty or has no header row.");
+                return;
+            }
+            const headers = sheetDataAsArray[0];
+            let debugInfo = headers.map(h => {
+                const charCodes = h.split('').map(char => char.charCodeAt(0)).join(', ');
+                return `'${h}' (Char Codes: [${charCodes}])`;
+            }).join('\n');
+            resultsContainer.innerHTML = ''; 
+            const overallStatus = document.createElement('div');
+            overallStatus.className = 'mb-4 p-4 rounded-lg text-center bg-blue-100 border border-blue-300';
+            overallStatus.innerHTML = `<div class="font-bold text-blue-800 text-lg flex items-center justify-center"><svg class="w-6 h-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>Header Debug Information</div>`;
+            resultsContainer.prepend(overallStatus);
+            const debugCard = document.createElement('div');
+            debugCard.className = 'p-4 rounded-lg border border-gray-300 bg-gray-50';
+            debugCard.innerHTML = `<p class="font-semibold text-gray-800 mb-2">The following headers were read directly from the <b>first row</b> of your sheet. Compare them carefully with what you see in Excel. This will reveal any extra spaces or hidden special characters.</p><pre class="bg-white p-3 rounded text-sm whitespace-pre-wrap"><code>${debugInfo}</code></pre>`;
+            resultsContainer.appendChild(debugCard);
+            validationResultsEl.classList.remove('hidden');
+            alert("Header debug information has been displayed in the results panel.");
+        }
+        // --- New Function for Amt Variance Check ---
+        function runVarianceAmtCwiWoCheck() {
+            updateErrorReport([], errorTypes.CWI_WO_AMT_VARIANCE, () => {});
+            runGenericValidation({
+                errorType: errorTypes.CWI_WO_AMT_VARIANCE,
+                keys: [
+                    { keyName: 'varianceKey', potentialNames: ['Variance (CWI vs WO) (Amt)', 'Variance (Amt)', 'Amt Variance', 'Amount Variance', 'Variance in Amount'] },
+                    { keyName: 'val1Key', potentialNames: ['As per CWI (Amt)'] },
+                    { keyName: 'val2Key', potentialNames: ['As per WO (Amt)', 'Amt as per PO'] },
+                    { keyName: 'uCodeKey', potentialNames: ['U.code', 'U Code'] },
+                    { keyName: 'particularsKey', potentialNames: ['Particulars', 'Item'] },
+                ],
+                displayResults: (m, c) => displayVarianceCheckResults(m, c),
+                labels: {
+                    title: "CWI vs WO Amount Variance",
+                    success: "All 'Variance (Amt)' values are correct.",
+                    error: "incorrect 'Variance (Amt)' values.",
+                    col1: 'CWI Amt',
+                    col2: 'WO Amt'
+                }
+            },
+            (row, keys) => {
+                const sheetVariance = parseFloat(row[keys.varianceKey]) || 0;
+                const val1 = parseFloat(row[keys.val1Key]) || 0;
+                const val2 = parseFloat(row[keys.val2Key]) || 0;
+                const calculatedVariance = val1 - val2;
+                if (Math.abs(sheetVariance - calculatedVariance) > 0.01) {
+                    return {
+                        uCode: row[keys.uCodeKey] || 'N/A',
+                        particulars: row[keys.particularsKey] || 'No Description',
+                        val1: val1,
+                        val2: val2,
+                        sheetVariance,
+                        calculatedVariance
+                    };
+                }
+                return null;
+            });
+        }
+
+        // --- New Function for Qty Match Check ---
+        function runQtyMatchCheck() {
+            // This is an informational check, so we don't use the error report system.
+            // Clear previous results from other checks.
+            validationResultsEl.classList.add('hidden');
+            resultsContainer.innerHTML = '';
+            
+            runGenericValidation({
+                keys: [
+                    { keyName: 'cwiQtyKey', potentialNames: ['As per CWI (Qty)'] },
+                    { keyName: 'woQtyKey', potentialNames: ['As per WO - Qty', 'As per WO/PO (Qty)'] },
+                    { keyName: 'uCodeKey', potentialNames: ['U.code', 'U Code'] },
+                    { keyName: 'particularsKey', potentialNames: ['Particulars', 'Item'] }
+                ],
+                displayResults: displayQtyMatchResults // Use the new display function
+            },
+            (row, keys) => {
+                const cwiQty = parseFloat(row[keys.cwiQtyKey]) || 0;
+                const woQty = parseFloat(row[keys.woQtyKey]) || 0;
+
+                // Find items where quantities match AND are not zero
+                if (cwiQty > 0 && Math.abs(cwiQty - woQty) < 0.01) {
+                    return {
+                        uCode: row[keys.uCodeKey] || 'N/A',
+                        particulars: row[keys.particularsKey] || 'No Description',
+                        qty: cwiQty
+                    };
+                }
+                return null;
+            });
+        }
+
+        // --- New Display Function for Qty Match ---
+        function displayQtyMatchResults(matches) {
+            resultsContainer.innerHTML = ''; // Clear previous results
+            validationResultsEl.classList.remove('hidden');
+
+            if (matches.length === 0) {
+                const infoCard = document.createElement('div');
+                infoCard.className = 'p-4 rounded-lg border bg-blue-100 border-blue-300 text-center';
+                infoCard.innerHTML = `<div class="font-bold text-blue-800 text-lg flex items-center justify-center"><svg class="w-6 h-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>No Matches Found</div><div class="text-blue-700 mt-1">No items were found where (CWI Qty = WO Qty) and the quantity is greater than 0.</div>`;
+                resultsContainer.appendChild(infoCard);
+                alert("No items found where CWI Qty = WO Qty.");
+            } else {
+                const summaryCard = document.createElement('div');
+                summaryCard.className = 'mb-4 p-4 rounded-lg text-center bg-teal-100 border-teal-300';
+                summaryCard.innerHTML = `<div class="font-bold text-teal-800 text-lg flex items-center justify-center"><svg class="w-6 h-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>Quantity Matches Found</div><div class="text-teal-700 mt-1">${matches.length} item(s) found where CWI Qty = WO Qty.</div>`;
+                resultsContainer.appendChild(summaryCard);
+                alert(`${matches.length} item(s) found with matching non-zero quantities. See details below.`);
+
+                matches.forEach(item => {
+                    const itemCard = document.createElement('div');
+                    itemCard.className = 'p-4 rounded-lg border border-teal-300 bg-teal-50';
+                    itemCard.innerHTML = `<p class="font-semibold text-gray-800">${item.uCode} - ${item.particulars}</p>
+                                          <p class="text-sm mt-1">Matched Quantity: <span class="font-bold text-teal-700">${item.qty.toLocaleString('en-IN')}</span></p>`;
+                    resultsContainer.appendChild(itemCard);
+                });
+            }
+        }
+
+        // --- New Function for Sq.ft Variance Check ---
+        function runSqftItemsVarianceCheck() {
+            updateErrorReport([], errorTypes.POSITIVE_VARIANCE_SQFT, () => {});
+            runGenericValidation({
+                keys: [
+                    { keyName: 'unitKey', potentialNames: ['Unit'] },
+                    { keyName: 'cwiQtyKey', potentialNames: ['As per CWI (Qty)'] },
+                    { keyName: 'woQtyKey', potentialNames: ['As per WO - Qty', 'As per WO/PO (Qty)'] },
+                    { keyName: 'uCodeKey', potentialNames: ['U.code', 'U Code'] },
+                    { keyName: 'particularsKey', potentialNames: ['Particulars', 'Item'] }
+                ],
+                displayResults: displaySqftItemsVarianceResults // Use the new display function
+            }, (row, keys) => {
+                // Normalize unit: lowercase, remove dots, remove spaces
+                const unit = (row[keys.unitKey] || '').toString().toLowerCase().replace(/\./g, '').replace(/\s/g, '');
+                const targetUnits = ['sqft', 'sft']; // Handles 'sqft', 'sft', 'sq ft' (after normalization)
+
+                if (!targetUnits.includes(unit)) {
+                    return null;
+                }
+
+                const cwiQty = parseFloat(row[keys.cwiQtyKey]) || 0;
+                const woQty = parseFloat(row[keys.woQtyKey]) || 0;
+
+                if (woQty === 0) {
+                    return null; // Avoid division by zero
+                }
+
+                const variancePct = ((cwiQty - woQty) / woQty) * 100;
+
+                // Check for variance > 25%
+                if (variancePct > 25) {
+                    return {
+                        uCode: row[keys.uCodeKey] || 'N/A',
+                        particulars: row[keys.particularsKey] || 'No Description',
+                        unit: row[keys.unitKey], // Original unit for display
+                        woQty,
+                        cwiQty,
+                        variancePct
+                    };
+                }
+
+                return null;
+            });
+        }
+
+        // --- New Display Function for Sq.ft Variance ---
+        function displaySqftItemsVarianceResults(issues) {
+            resultsContainer.innerHTML = '';
+            validationResultsEl.classList.remove('hidden');
+
+            const varianceSqftFormatter = (issue, type) => ({
+                particulars: `${issue.uCode} - ${issue.particulars}`,
+                type: type,
+                correction: `Quantity variance for this square foot item (${issue.unit}) is +${issue.variancePct.toFixed(2)}%, which is over the 25% threshold. (WO Qty: ${issue.woQty.toLocaleString()}, Executed CWI Qty: ${issue.cwiQty.toLocaleString()}). Please review for accuracy.`
+            });
+            updateErrorReport(issues, errorTypes.POSITIVE_VARIANCE_SQFT, varianceSqftFormatter);
+
+            if (issues.length === 0) {
+                const successCard = document.createElement('div');
+                successCard.className = 'p-4 rounded-lg border bg-green-100 border-green-300 text-center';
+                successCard.innerHTML = `<div class="font-bold text-green-800 text-lg flex items-center justify-center"><svg class="w-6 h-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>Sq.ft Item Variances OK</div><div class="text-green-700 mt-1">No Sq.ft/Sft items found with a positive quantity variance exceeding 25%.</div>`;
+                resultsContainer.appendChild(successCard);
+                alert("Perfect! All square foot item quantity variances are within the >25% threshold.");
+            } else {
+                const errorSummaryCard = document.createElement('div');
+                errorSummaryCard.className = 'mb-4 p-4 rounded-lg text-center bg-purple-100 border-purple-300';
+                errorSummaryCard.innerHTML = `<div class="font-bold text-purple-800 text-lg flex items-center justify-center"><svg class="w-6 h-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>Significant Sq.ft Item Variances Found</div><div class="text-purple-700 mt-1">${issues.length} Sq.ft/Sft item(s) have a positive quantity variance greater than 25%.</div>`;
+                resultsContainer.appendChild(errorSummaryCard);
+                alert(`${issues.length} Sq.ft/Sft item(s) exceeded the >25% positive variance threshold. See details below.`);
+
+                issues.forEach(item => {
+                    const issueCard = document.createElement('div');
+                    const varianceText = `<span class="font-bold text-purple-800">+${item.variancePct.toFixed(2)}%</span>`;
+                    const cardClass = 'p-4 rounded-lg border border-purple-400 bg-purple-50';
+
+                    issueCard.className = cardClass;
+                    issueCard.innerHTML = `
+                        <p class="font-semibold text-gray-800">${item.uCode} - ${item.particulars}</p>
+                        <div class="mt-2 p-2 bg-white/50 rounded-md">
+                            <div class="text-sm grid grid-cols-1 md:grid-cols-3 gap-2">
+                                <p>Planned Qty (WO): <span class="font-medium">${item.woQty.toLocaleString('en-IN')}</span></p>
+                                <p>Actual Qty (CWI): <span class="font-medium">${item.cwiQty.toLocaleString('en-IN')}</span></p>
+                                <p>Variance (<span class="italic">${item.unit}</span>): ${varianceText}</p>
+                            </div>
+                        </div>`;
+                    resultsContainer.appendChild(issueCard);
+                });
             }
         }
     </script>
 </body>
-
 </html>
-
-
-
-
