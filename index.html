@@ -2362,8 +2362,18 @@ function analyzeChasingWork() {
 
                 const cwiQty = parseFloat(row[keys.cwiQtyKey]) || 0;
                 const woQty = parseFloat(row[keys.woQtyKey]) || 0;
-                
+
                 if (woQty === 0) {
+                    if (cwiQty > 0) {
+                        // Executed but never planned — flag it, no % to compute
+                        return {
+                            uCode: row[keys.uCodeKey] || 'N/A',
+                            particulars: row[keys.particularsKey] || 'No Description',
+                            woQty,
+                            cwiQty,
+                            variancePct: null
+                        };
+                    }
                     return null;
                 }
 
@@ -2387,11 +2397,16 @@ function analyzeChasingWork() {
             resultsContainer.innerHTML = '';
             validationResultsEl.classList.remove('hidden');
 
-            const varianceNosFormatter = (issue, type) => ({
-                particulars: `${issue.uCode} - ${issue.particulars}`,
-                type: type,
-                correction: `Quantity variance for this 'Nos.' item is +${issue.variancePct.toFixed(2)}%, which is over the 10% threshold. (WO Qty: ${issue.woQty.toLocaleString()}, Executed CWI Qty: ${issue.cwiQty.toLocaleString()}). Please review for accuracy.`
-            });
+            const varianceNosFormatter = (issue, type) => {
+                const detail = issue.variancePct === null
+                    ? `This item has no WO/planned quantity (WO Qty: 0) but was executed with a CWI quantity of ${issue.cwiQty.toLocaleString()}. This item was not planned at all.`
+                    : `Quantity variance for this 'Nos.' item is +${issue.variancePct.toFixed(2)}%, which is over the 10% threshold. (WO Qty: ${issue.woQty.toLocaleString()}, Executed CWI Qty: ${issue.cwiQty.toLocaleString()})`;
+                return {
+                    particulars: `${issue.uCode} - ${issue.particulars}`,
+                    type: type,
+                    correction: `${detail}. Please review for accuracy.`
+                };
+            };
             updateErrorReport(issues, errorTypes.POSITIVE_VARIANCE_NOS, varianceNosFormatter);
 
             if (issues.length === 0) {
@@ -2409,7 +2424,9 @@ function analyzeChasingWork() {
                 
                 issues.forEach(item => {
                     const issueCard = document.createElement('div');
-                    const varianceText = `<span class="font-bold text-orange-800">+${item.variancePct.toFixed(2)}%</span>`;
+                    const varianceText = item.variancePct === null
+                        ? `<span class="font-bold text-orange-800">Not in WO (New Item)</span>`
+                        : `<span class="font-bold text-orange-800">+${item.variancePct.toFixed(2)}%</span>`;
                     const cardClass = 'p-4 rounded-lg border border-orange-400 bg-orange-50';
                     
                     issueCard.className = cardClass;
@@ -2450,6 +2467,16 @@ function analyzeChasingWork() {
                 const woQty = parseFloat(row[keys.woQtyKey]) || 0;
 
                 if (woQty === 0) {
+                    if (cwiQty > 0) {
+                        return {
+                            uCode: row[keys.uCodeKey] || 'N/A',
+                            particulars: row[keys.particularsKey] || 'No Description',
+                            unit: row[keys.unitKey],
+                            woQty,
+                            cwiQty,
+                            variancePct: null
+                        };
+                    }
                     return null;
                 }
 
@@ -2474,11 +2501,16 @@ function analyzeChasingWork() {
             resultsContainer.innerHTML = '';
             validationResultsEl.classList.remove('hidden');
 
-            const varianceRunningFormatter = (issue, type) => ({
-                particulars: `${issue.uCode} - ${issue.particulars}`,
-                type: type,
-                correction: `Quantity variance for this running item (${issue.unit}) is +${issue.variancePct.toFixed(2)}%, which is over the 10% threshold. (WO Qty: ${issue.woQty.toLocaleString()}, Executed CWI Qty: ${issue.cwiQty.toLocaleString()}). Please review for accuracy.`
-            });
+            const varianceRunningFormatter = (issue, type) => {
+                const detail = issue.variancePct === null
+                    ? `This running item (${issue.unit}) has no WO/planned quantity (WO Qty: 0) but was executed with a CWI quantity of ${issue.cwiQty.toLocaleString()}. This item was not planned at all.`
+                    : `Quantity variance for this running item (${issue.unit}) is +${issue.variancePct.toFixed(2)}%, which is over the 10% threshold. (WO Qty: ${issue.woQty.toLocaleString()}, Executed CWI Qty: ${issue.cwiQty.toLocaleString()})`;
+                return {
+                    particulars: `${issue.uCode} - ${issue.particulars}`,
+                    type: type,
+                    correction: `${detail}. Please review for accuracy.`
+                };
+            };
             updateErrorReport(issues, errorTypes.POSITIVE_VARIANCE_RUNNING, varianceRunningFormatter);
 
             if (issues.length === 0) {
@@ -2496,7 +2528,9 @@ function analyzeChasingWork() {
                 
                 issues.forEach(item => {
                     const issueCard = document.createElement('div');
-                    const varianceText = `<span class="font-bold text-cyan-800">+${item.variancePct.toFixed(2)}%</span>`;
+                    const varianceText = item.variancePct === null
+                        ? `<span class="font-bold text-cyan-800">Not in WO (New Item)</span>`
+                        : `<span class="font-bold text-cyan-800">+${item.variancePct.toFixed(2)}%</span>`;
                     const cardClass = 'p-4 rounded-lg border border-cyan-400 bg-cyan-50';
 
                     issueCard.className = cardClass;
@@ -2669,6 +2703,16 @@ function analyzeChasingWork() {
                 const woQty = parseFloat(row[keys.woQtyKey]) || 0;
 
                 if (woQty === 0) {
+                    if (cwiQty > 0) {
+                        return {
+                            uCode: row[keys.uCodeKey] || 'N/A',
+                            particulars: row[keys.particularsKey] || 'No Description',
+                            unit: row[keys.unitKey],
+                            woQty,
+                            cwiQty,
+                            variancePct: null
+                        };
+                    }
                     return null; // Avoid division by zero
                 }
 
@@ -2695,11 +2739,16 @@ function analyzeChasingWork() {
             resultsContainer.innerHTML = '';
             validationResultsEl.classList.remove('hidden');
 
-            const varianceSqftFormatter = (issue, type) => ({
-                particulars: `${issue.uCode} - ${issue.particulars}`,
-                type: type,
-                correction: `Quantity variance for this square foot item (${issue.unit}) is +${issue.variancePct.toFixed(2)}%, which is over the 25% threshold. (WO Qty: ${issue.woQty.toLocaleString()}, Executed CWI Qty: ${issue.cwiQty.toLocaleString()}). Please review for accuracy.`
-            });
+            const varianceSqftFormatter = (issue, type) => {
+                const detail = issue.variancePct === null
+                    ? `This square foot item (${issue.unit}) has no WO/planned quantity (WO Qty: 0) but was executed with a CWI quantity of ${issue.cwiQty.toLocaleString()}. This item was not planned at all.`
+                    : `Quantity variance for this square foot item (${issue.unit}) is +${issue.variancePct.toFixed(2)}%, which is over the 25% threshold. (WO Qty: ${issue.woQty.toLocaleString()}, Executed CWI Qty: ${issue.cwiQty.toLocaleString()})`;
+                return {
+                    particulars: `${issue.uCode} - ${issue.particulars}`,
+                    type: type,
+                    correction: `${detail}. Please review for accuracy.`
+                };
+            };
             updateErrorReport(issues, errorTypes.POSITIVE_VARIANCE_SQFT, varianceSqftFormatter);
 
             if (issues.length === 0) {
@@ -2717,7 +2766,9 @@ function analyzeChasingWork() {
 
                 issues.forEach(item => {
                     const issueCard = document.createElement('div');
-                    const varianceText = `<span class="font-bold text-purple-800">+${item.variancePct.toFixed(2)}%</span>`;
+                    const varianceText = item.variancePct === null
+                        ? `<span class="font-bold text-purple-800">Not in WO (New Item)</span>`
+                        : `<span class="font-bold text-purple-800">+${item.variancePct.toFixed(2)}%</span>`;
                     const cardClass = 'p-4 rounded-lg border border-purple-400 bg-purple-50';
 
                     issueCard.className = cardClass;
