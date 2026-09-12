@@ -1331,9 +1331,40 @@ case 'waterproofing_wall_deduction_check':
         });
         tableHtml += `</tbody></table>`;
 
-    
+    // --- 4. RENDER TABLE FOR MEASUREMENT-SHEET-BASED DEDUCTION CHECKS ---
+    } else if (itemConfig && (itemConfig.type === 'deduction_logic_check' || itemConfig.type === 'waterproofing_wall_deduction_check')) {
+        const cache = detailsDataCache[itemId] || {};
+        const uCodeKey = cache.uCodeKey;
+        const particularsKey = cache.partKey;
+        const cwiQtyKey = cache.qtyKey;
 
-    // --- 4. RENDER TABLE FOR ALL OTHER CHECKS (CWI Quantity View) ---
+        if (!uCodeKey || !particularsKey || !cwiQtyKey) {
+            detailsModalBody.innerHTML = `<p class="text-red-600 p-4">Could not determine the correct columns from the Measurement Sheet for this item.</p>`;
+            detailsModal.classList.remove('hidden');
+            return;
+        }
+
+        tableHtml = `<table class="min-w-full divide-y divide-gray-300 text-gray-800">
+            <thead class="bg-gray-200">
+                <tr>
+                    <th class="px-4 py-2 text-left text-xs font-bold text-gray-600 uppercase">U.Code/Sr.No</th>
+                    <th class="px-4 py-2 text-left text-xs font-bold text-gray-600 uppercase">Particulars</th>
+                    <th class="px-4 py-2 text-left text-xs font-bold text-gray-600 uppercase">As per CWI (Qty)</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">`;
+
+        data.forEach(row => {
+            tableHtml += `
+                <tr>
+                    <td class="px-4 py-2 whitespace-nowrap text-sm">${row[uCodeKey] || 'N/A'}</td>
+                    <td class="px-4 py-2 text-sm">${row[particularsKey] || ''}</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-sm text-right font-medium">${row[cwiQtyKey] || 0}</td>
+                </tr>`;
+        });
+        tableHtml += `</tbody></table>`;
+
+    // --- 5. RENDER TABLE FOR ALL OTHER CHECKS (CWI Quantity View) ---
     } else {
         const { uCodeKey, particularsKey, cwiQtyKey } = extractedDataKeys;
         if (!uCodeKey || !particularsKey || !cwiQtyKey) {
@@ -1662,13 +1693,16 @@ return {
         }
 function analyzeDeductionsInMeasurement(config) {
     const mstSheet = findSheet('Extracted Measurement Sheet');
-    if (!mstSheet) return { status: 'NO_MST_SHEET', data: [] };
+    if (!mstSheet) return { status: 'NO_MST_SHEET', data: [], qtyKey: null, partKey: null, uCodeKey: null };
 
     const data = XLSX.utils.sheet_to_json(mstSheet);
-    // Find headers to get Qty column
-    const headers = XLSX.utils.sheet_to_json(mstSheet, { header: 1 })[0];
-    const qtyKey = findKey({ [headers[0]]: '' }, ['As per CWI (Qty)']) || headers[10]; // Fallback to index 10
-    const partKey = findKey({ [headers[0]]: '' }, ['Particulars']) || headers[1];
+    // Build a proper header lookup object from ALL headers, not just headers[0]
+    const headers = XLSX.utils.sheet_to_json(mstSheet, { header: 1 })[0] || [];
+    const headerObject = headers.reduce((obj, h) => ({ ...obj, [h]: '' }), {});
+
+    const qtyKey = findKey(headerObject, ['As per CWI (Qty)']) || headers[10]; // Fallback to index 10
+    const partKey = findKey(headerObject, ['Particulars']) || headers[1];
+    const uCodeKey = findKey(headerObject, ['U.code', 'U Code', 'Sr.no']) || headers[0];
 
     let relevantRows = [];
     let insideSection = false;
@@ -1694,7 +1728,10 @@ function analyzeDeductionsInMeasurement(config) {
 
     return {
         status: relevantRows.length > 0 && hasAnyQty ? 'QTY_FOUND' : 'QTY_NOT_FOUND',
-        data: relevantRows
+        data: relevantRows,
+        qtyKey,
+        partKey,
+        uCodeKey
     };
 }
 
@@ -1778,7 +1815,7 @@ function analyzeWaterproofingWallDeduction() {
     }
 
     const hasQty = relevantRows.length > 0;
-    return { status: hasQty ? 'QTY_FOUND' : 'QTY_NOT_FOUND', data: relevantRows, foundSection: foundI5 };
+    return { status: hasQty ? 'QTY_FOUND' : 'QTY_NOT_FOUND', data: relevantRows, foundSection: foundI5, uCodeKey, partKey, qtyKey };
 }
 function analyzeSkirtingWidthDisclaimer() {
     const mstSheet = findSheet('Extracted Measurement Sheet');
